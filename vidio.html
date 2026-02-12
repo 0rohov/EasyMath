@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyMath — Видео сабақтар</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cyan: #3cd3d3;
+            --purple: #a874d8;
+            --dark: #2c3e50;
+            --bg: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            background-color: var(--bg);
+            color: #333;
+        }
+
+        header {
+            background: white;
+            padding: 20px 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+
+        .logo { font-size: 28px; font-weight: 800; color: var(--purple); text-decoration: none; }
+        .logo span { color: var(--cyan); }
+
+        .container {
+            max-width: 1100px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--dark);
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+        }
+
+        /* Видеолардың орналасуы */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .video-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+
+        .video-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(168, 116, 216, 0.2);
+        }
+
+        /* Видео орны (Placeholder) */
+        .video-placeholder {
+            width: 100%;
+            height: 200px;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .video-info {
+            padding: 20px;
+        }
+
+        .video-info h3 {
+            margin: 0 0 10px 0;
+            color: var(--purple);
+        }
+
+        .video-info p {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--purple);
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">Easy<span>Math</span></a>
+</header>
+
+<div class="container">
+    <a href="index.html" class="back-btn">← Артқа қайту</a>
+    <h1>Видео сабақтар топтамасы</h1>
+
+    <div class="video-grid">
+        <div class="video-card">
+            <div class="video-placeholder">
+                ВИДЕО ЖУЫРДА ҚОСЫЛАДЫ...<br>(Тригонометрия негіздері)
+            </div>
+            <div class="video-info">
+                <h3>1-сабақ: Тригонометрия</h3>
+                <p>ҰБТ-да ең көп келетін формулалар мен оларды оңай жаттау жолдары.</p>
+            </div>
+        </div>
+
+        <div class="video-card">
+            <div class="video-placeholder">
+                ВИДЕО ЖУЫРДА ҚОСЫЛАДЫ...<br>(Логарифмдік теңдеулер)
+            </div>
+            <div class="video-info">
+                <h3>2-сабақ: Логарифм</h3>
+                <p>Логарифм қасиеттері мен күрделі теңдеулерді 30 секундта шешу әдісі.</p>
+            </div>
+        </div>
+
+        <div class="video-card">
+            <div class="video-placeholder">
+                ВИДЕО ЖУЫРДА ҚОСЫЛАДЫ...<br>(Туынды және оның қолданылуы)
+            </div>
+            <div class="video-info">
+                <h3>3-сабақ: Туынды</h3>
+                <p>Функцияның зерттеу және максимум/минимум нүктелерін табу.</p>
+            </div>
+        </div>
+
+        <div class="video-card">
+            <div class="video-placeholder">
+                ВИДЕО ЖУЫРДА ҚОСЫЛАДЫ...<br>(Планиметрия: Үшбұрыштар)
+            </div>
+            <div class="video-info">
+                <h3>4-сабақ: Геометрия</h3>
+                <p>Үшбұрыштың ауданы мен қабырғаларын табудағы Сұлтанбидің лайфхактары.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
