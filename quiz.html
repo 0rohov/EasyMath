@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyMath — ҰБТ Формулалар Тесті</title>
+    <title>EasyMath — Бір-бірлеп тест</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
@@ -14,284 +14,306 @@
             --purple: #a874d8;
             --white: #ffffff;
             --bg-color: #f4f7f6;
+            --success: #2ecc71;
+            --error: #e74c3c;
         }
 
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
+        body { font-family: 'Montserrat', sans-serif; background: var(--bg-color); padding: 20px; }
 
         .quiz-container {
-            max-width: 800px;
-            margin: 0 auto;
+            max-width: 600px;
+            margin: 50px auto;
             background: var(--white);
-            padding: 40px;
+            padding: 30px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border-top: 10px solid var(--purple);
-        }
-
-        h1 {
             text-align: center;
-            color: var(--purple);
-            font-weight: 700;
         }
 
-        .description {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .question-block {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-            transition: 0.3s;
-            position: relative;
-        }
-
-        .question-block:hover {
-            box-shadow: 0 5px 15px rgba(60, 211, 211, 0.15);
-            border-color: var(--cyan);
-        }
-
-        .q-number {
-            background: var(--cyan);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        .options {
-            margin-top: 15px;
-        }
-
-        .options label {
-            display: block;
-            background: #f9f9f9;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 1px solid transparent;
-            transition: 0.2s;
-        }
-
-        .options label:hover {
-            background: #eefefe;
-            border-color: var(--cyan);
-        }
-
-        input[type="radio"] {
-            margin-right: 10px;
-            accent-color: var(--purple);
-        }
-
-        .btn-check {
-            display: block;
+        .progress-bar {
             width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        #progress {
+            width: 0%;
+            height: 100%;
+            background: var(--purple);
+            transition: 0.3s;
+        }
+
+        .question-text { font-size: 1.4rem; margin-bottom: 25px; min-height: 60px; }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            background: #f9f9f9;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: 0.2s;
+            outline: none;
+        }
+
+        .option-btn:hover:not(:disabled) { border-color: var(--cyan); background: #f0fdfd; }
+
+        /* Дұрыс және қате жауап стилі */
+        .correct { background: var(--success) !important; color: white; border-color: var(--success) !important; }
+        .wrong { background: var(--error) !important; color: white; border-color: var(--error) !important; }
+
+        .next-btn {
+            margin-top: 25px;
+            padding: 12px 30px;
+            background: var(--purple);
             color: white;
             border: none;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            font-weight: bold;
+            border-radius: 25px;
             cursor: pointer;
-            margin-top: 30px;
-            transition: transform 0.2s;
-        }
-
-        .btn-check:hover {
-            transform: scale(1.02);
-            box-shadow: 0 5px 20px rgba(168, 116, 216, 0.4);
-        }
-
-        #result-area {
-            display: none;
-            text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-            background: #e8f8f8;
-            border-radius: 15px;
-            border: 2px solid var(--cyan);
-        }
-
-        .home-link {
-            display: inline-block;
-            margin-top: 20px;
-            text-decoration: none;
-            color: var(--purple);
-            font-weight: bold;
+            display: none; /* Жауап бергенше көрінбейді */
         }
     </style>
 </head>
 <body>
 
 <div class="quiz-container">
-    <h1>📐 EasyMath: 50 Формула</h1>
-    <p class="description">Сұлтанби сияқты 124 балл алу үшін барлық формуланы жатқа білу керек!</p>
+    <div class="progress-bar"><div id="progress"></div></div>
+    <p id="q-count">Сұрақ: 1 / 50</p>
     
-    <div id="quiz-content">
+    <div class="question-text" id="question">Жүктелуде...</div>
+    
+    <div class="options-grid" id="options">
         </div>
 
-    <button class="btn-check" onclick="calculateResult()">Нәтижені тексеру</button>
+    <button id="next-button" class="next-btn" onclick="nextQuestion()">Келесі сұрақ ➔</button>
 
-    <div id="result-area">
-        <h2 id="score-text"></h2>
-        <p id="feedback-text"></p>
-        <a href="index.html" class="home-link">⬅ Басты бетке қайту</a>
+    <div id="final-result" style="display:none;">
+        <h2>Тест аяқталды!</h2>
+        <h1 id="final-score">0 / 0</h1>
+        <button class="next-btn" style="display:inline-block;" onclick="location.reload()">Қайта бастау</button>
     </div>
 </div>
 
 <script>
-// 50 СҰРАҚТЫҢ БАЗАСЫ (СҰРАҚ, 4 НҰСҚА, ДҰРЫС ЖАУАП ИНДЕКСІ)
 const questions = [
-    // 1-10: Алгебра негіздері
-    { q: "Квадрат теңдеудің дискриминанты \\( D = ? \\)", options: ["b - 4ac", "b^2 - 4ac", "b^2 + 4ac", "2b - 4ac"], correct: 1 },
+    { q: "Квадрат теңдеудің дискриминанты: \\( D = ? \\)", options: ["b - 4ac", "b^2 - 4ac", "b^2 + 4ac", "2b - 4ac"], correct: 1 },
     { q: "Қысқаша көбейту: \\( (a+b)^2 = ? \\)", options: ["a^2 + b^2", "a^2 + ab + b^2", "a^2 + 2ab + b^2", "a^2 - 2ab + b^2"], correct: 2 },
     { q: "Қысқаша көбейту: \\( a^2 - b^2 = ? \\)", options: ["(a-b)(a+b)", "(a-b)^2", "(a+b)^2", "a^2 - ab - b^2"], correct: 0 },
-    { q: "Арифметикалық прогрессияның \\( n \\)-ші мүшесі:", options: ["a_1 + (n-1)d", "a_1 \\cdot d^{n-1}", "a_1 + nd", "a_1 - (n-1)d"], correct: 0 },
-    { q: "Арифметикалық прогрессияның қосындысы \\( S_n \\):", options: ["\\frac{a_1+a_n}{2} \\cdot n", "\\frac{a_1+a_n}{2}", "(a_1+a_n) \\cdot n", "a_1 + a_n"], correct: 0 },
-    { q: "Геометриялық прогрессияның \\( n \\)-ші мүшесі:", options: ["b_1 + (n-1)q", "b_1 \\cdot q^{n-1}", "b_1 \\cdot q^n", "b_1 / q^{n-1}"], correct: 1 },
-    { q: "Геометриялық прогрессияның қосындысы \\( S_n \\):", options: ["\\frac{b_1(q^n-1)}{q-1}", "\\frac{b_1(1-q^n)}{1+q}", "b_1 \\cdot q^n", "\\frac{q^n-1}{b_1}"], correct: 0 },
     { q: "Виет теоремасы: \\( x_1 + x_2 = ? \\)", options: ["c/a", "-b/a", "b/a", "-c/a"], correct: 1 },
     { q: "Виет теоремасы: \\( x_1 \\cdot x_2 = ? \\)", options: ["c/a", "-b/a", "b/a", "-c/a"], correct: 0 },
-    { q: "Модуль қасиеті: \\( |x| < a \\) болса:", options: ["-a < x < a", "x > a", "x < -a", "x = a"], correct: 0 },
+    { q: "\\( a^0 \\) неге тең (\\( a \\neq 0 \\))?", options: ["0", "a", "1", "-1"], correct: 2 },
+    { q: "\\( a^n \\cdot a^m = ? \\)", options: ["a^{n \cdot m}", "a^{n+m}", "a^{n-m}", "a^n"], correct: 1 },
+    { q: "\\( a^{-n} \\) неге тең?", options: ["-a^n", "1/a^n", "a^{1/n}", "0"], correct: 1 },
+    { q: "Арифметикалық прогрессияның n-ші мүшесі:", options: ["a_1 + (n-1)d", "a_1 + nd", "a_1 \cdot d^{n-1}", "a_1 - d"], correct: 0 },
+    { q: "Геометриялық прогрессияның n-ші мүшесі:", options: ["b_1 + (n-1)q", "b_1 \cdot q^{n-1}", "b_1 \cdot q^n", "b_1 / q"], correct: 1 },
 
-    // 11-20: Дәреже және Түбір
-    { q: "Дәреже қасиеті: \\( a^n \\cdot a^m = ? \\)", options: ["a^{n \\cdot m}", "a^{n+m}", "a^{n-m}", "a^{n/m}"], correct: 1 },
-    { q: "Дәреже қасиеті: \\( (a^n)^m = ? \\)", options: ["a^{n+m}", "a^{n \\cdot m}", "a^{n-m}", "a^{m-n}"], correct: 1 },
-    { q: "Нөлдік дәреже: \\( a^0 = ? \\) (a \\neq 0)", options: ["0", "1", "a", "-1"], correct: 1 },
-    { q: "Теріс дәреже: \\( a^{-n} = ? \\)", options: ["-a^n", "1/a^n", "a^{1/n}", "-1/a^n"], correct: 1 },
-    { q: "Түбір қасиеті: \\( \\sqrt{a \\cdot b} = ? \\)", options: ["\\sqrt{a} + \\sqrt{b}", "\\sqrt{a} \\cdot \\sqrt{b}", "a \\cdot b", "\\sqrt{a/b}"], correct: 1 },
-    
-    // 21-30: Тригонометрия
+    // --- 2. ТРИГОНОМЕТРИЯ ---
     { q: "Негізгі тепе-теңдік: \\( \\sin^2\\alpha + \\cos^2\\alpha = ? \\)", options: ["0", "-1", "1", "2"], correct: 2 },
     { q: "\\( \\text{tg}\\alpha \\cdot \\text{ctg}\\alpha = ? \\)", options: ["0", "1", "-1", "\\sin\\alpha"], correct: 1 },
-    { q: "\\( \\sin 2\\alpha = ? \\)", options: ["2\\sin\\alpha", "\\cos^2\\alpha - \\sin^2\\alpha", "2\\sin\\alpha\\cos\\alpha", "2\\cos\\alpha"], correct: 2 },
-    { q: "\\( \\cos 2\\alpha = ? \\)", options: ["2\\sin\\alpha\\cos\\alpha", "\\cos^2\\alpha - \\sin^2\\alpha", "\\sin^2\\alpha - \\cos^2\\alpha", "1"], correct: 1 },
-    { q: "\\( \\sin 30^\\circ = ? \\)", options: ["1/2", "\\sqrt{3}/2", "1", "0"], correct: 0 },
-    { q: "\\( \\cos 60^\\circ = ? \\)", options: ["\\sqrt{3}/2", "1/2", "1", "0"], correct: 1 },
-    { q: "\\( \\text{tg} 45^\\circ = ? \\)", options: ["1", "0", "\\sqrt{3}", "1/\\sqrt{3}"], correct: 0 },
-    { q: "Келтіру формуласы: \\( \\sin(90^\\circ - \\alpha) = ? \\)", options: ["\\sin\\alpha", "-\\cos\\alpha", "\\cos\\alpha", "-\\sin\\alpha"], correct: 2 },
-    { q: "Косинустар теоремасы:", options: ["c^2 = a^2+b^2", "c^2 = a^2+b^2-2ab\\cos\\gamma", "c^2 = a^2+b^2+2ab\\cos\\gamma", "c^2 = a^2-b^2"], correct: 1 },
-    { q: "Синустар теоремасы:", options: ["a/\\sin A = b/\\sin B", "a \\cdot \\sin A = b \\cdot \\sin B", "a/\\cos A = b/\\cos B", "a=b"], correct: 0 },
+    { q: "\\( \\sin 2\\alpha = ? \\)", options: ["2\\sin\\alpha", "2\\sin\\alpha\\cos\\alpha", "\\cos^2\\alpha - \\sin^2\\alpha", "2\\cos\\alpha"], correct: 1 },
+    { q: "\\( \\cos 2\\alpha = ? \\)", options: ["2\\sin\\alpha\\cos\\alpha", "1 - 2\\sin^2\\alpha", "\\cos^2\\alpha - \\sin^2\\alpha", "2\\cos\\alpha"], correct: 2 },
+    { q: "\\( \\sin 30^\\circ \\) неге тең?", options: ["1/2", "\\sqrt{3}/2", "1", "0"], correct: 0 },
+    { q: "\\( \\cos 60^\\circ \\) неге тең?", options: ["\\sqrt{3}/2", "1/2", "1", "0"], correct: 1 },
+    { q: "\\( \\text{tg} 45^\\circ \\) неге тең?", options: ["0", "\\sqrt{3}", "1", "1/\\sqrt{3}"], correct: 2 },
+    { q: "\\( \\sin(90^\\circ - \\alpha) = ? \\)", options: ["\\sin\\alpha", "-\\cos\\alpha", "\\cos\\alpha", "\\text{tg}\\alpha"], correct: 2 },
+    { q: "\\( \\cos(180^\\circ - \\alpha) = ? \\)", options: ["\\cos\\alpha", "-\\cos\\alpha", "\\sin\\alpha", "0"], correct: 1 },
+    { q: "\\( \\sin 0^\\circ \\) неге тең?", options: ["1", "0", "-1", "0.5"], correct: 1 },
 
-    // 31-40: Геометрия (Планиметрия + Стереометрия)
-    { q: "Пифагор теоремасы:", options: ["a^2+b^2=c^2", "a+b=c", "a^2-b^2=c^2", "c^2-a^2=b"], correct: 0 },
-    { q: "Үшбұрыш ауданы (Герон):", options: ["S = \\sqrt{p(p-a)(p-b)(p-c)}", "S = ab", "S = a+b+c", "S = \\sqrt{a^2+b^2}"], correct: 0 },
-    { q: "Шеңбердің ұзындығы:", options: ["\\pi r^2", "2\\pi r", "\\pi d^2", "4\\pi r"], correct: 1 },
-    { q: "Дөңгелектің ауданы:", options: ["2\\pi r", "\\pi r^2", "2\\pi r^2", "\\pi d"], correct: 1 },
-    { q: "Трапеция ауданы:", options: ["\\frac{a+b}{2} \\cdot h", "a \\cdot h", "\\frac{1}{2}ab", "(a+b)h"], correct: 0 },
-    { q: "Параллелограмм ауданы:", options: ["a \\cdot b", "a \\cdot h", "\\frac{1}{2}ah", "d_1 d_2"], correct: 1 },
-    { q: "Кубтың көлемі:", options: ["a^2", "a^3", "6a^2", "4a"], correct: 1 },
-    { q: "Кубтың толық бетінің ауданы:", options: ["4a^2", "6a^2", "a^3", "12a"], correct: 1 },
-    { q: "Шардың көлемі:", options: ["4\\pi r^2", "\\frac{4}{3}\\pi r^3", "\\pi r^3", "2\\pi r^2"], correct: 1 },
-    { q: "Цилиндрдің көлемі:", options: ["\\pi r^2 h", "2\\pi r h", "\\pi r h", "\\frac{1}{3}\\pi r^2 h"], correct: 0 },
+    // --- 3. ЛОГАРИФМДЕР ---
+    { q: "\\( \\log_a 1 = ? \\)", options: ["1", "a", "0", "-1"], correct: 2 },
+    { q: "\\( \\log_a a = ? \\)", options: ["0", "1", "a", "a^2"], correct: 1 },
+    { q: "\\( \\log_a (xy) = ? \\)", options: ["\\log_a x + \\log_a y", "\\log_a x - \\log_a y", "\\log_a x \cdot \\log_a y", "x+y"], correct: 0 },
+    { q: "\\( \\log_a (x/y) = ? \\)", options: ["\\log_a x + \\log_a y", "\\log_a x - \\log_a y", "\\log_a (x-y)", "x/y"], correct: 1 },
+    { q: "\\( a^{\\log_a b} = ? \\)", options: ["a", "log b", "b", "1"], correct: 2 },
+    { q: "\\( \\ln e \\) неге тең?", options: ["0", "1", "e", "10"], correct: 1 },
+    { q: "\\( \\log_a b^n = ? \\)", options: ["n \cdot \\log_a b", "\\frac{1}{n} \\log_a b", "\\log_a (nb)", "b^n"], correct: 0 },
+    { q: "Негіз ауыстыру: \\( \\log_a b = ? \\)", options: ["\\frac{\\log_c a}{\\log_c b}", "\\frac{\\log_c b}{\\log_c a}", "\\log_c b - \\log_c a", "1"], correct: 1 },
 
-    // 41-50: Туынды және Интеграл, Логарифм
-    { q: "Логарифм: \\( \\log_a 1 = ? \\)", options: ["1", "0", "a", "-1"], correct: 1 },
-    { q: "Логарифм: \\( \\log_a a = ? \\)", options: ["0", "1", "a", "a^2"], correct: 1 },
-    { q: "Логарифм: \\( \\log_a (x \\cdot y) = ? \\)", options: ["\\log_a x \\cdot \\log_a y", "\\log_a x + \\log_a y", "\\log_a x - \\log_a y", "x+y"], correct: 1 },
-    { q: "Туынды: \\( (x^n)' = ? \\)", options: ["x^{n-1}", "n \\cdot x^{n-1}", "x^{n+1}", "n \\cdot x"], correct: 1 },
-    { q: "Туынды: \\( (\\sin x)' = ? \\)", options: ["\\cos x", "-\\cos x", "\\sin x", "-\\sin x"], correct: 0 },
-    { q: "Туынды: \\( (\\cos x)' = ? \\)", options: ["\\sin x", "-\\sin x", "\\cos x", "-\\cos x"], correct: 1 },
-    { q: "Туынды: \\( (e^x)' = ? \\)", options: ["e^x", "x \\cdot e^{x-1}", "e", "1"], correct: 0 },
-    { q: "Туынды: \\( (\\ln x)' = ? \\)", options: ["x", "1/x", "e^x", "\\ln x"], correct: 1 },
-    { q: "Алғашқы функция: \\( \\int x^n dx = ? \\)", options: ["nx^{n-1}", "\\frac{x^{n+1}}{n+1} + C", "x^{n+1}", "n x"], correct: 1 },
-    { q: "Тұрақты санның туындысы: \\( (C)' = ? \\)", options: ["1", "C", "0", "x"], correct: 2 }
+    // --- 4. ТУЫНДЫ (PROIZVODNAYA) ---
+    { q: "\\( (C)' \\) (тұрақты сан) неге тең?", options: ["1", "C", "0", "x"], correct: 2 },
+    { q: "\\( (x)' \\) неге тең?", options: ["0", "x", "1", "2x"], correct: 2 },
+    { q: "\\( (x^n)' = ? \\)", options: ["n \cdot x^{n-1}", "x^{n+1}", "n \cdot x^n", "x^{n-1}"], correct: 0 },
+    { q: "\\( (\\sin x)' = ? \\)", options: ["\\cos x", "-\\cos x", "\\sin x", "-\\sin x"], correct: 0 },
+    { q: "\\( (\\cos x)' = ? \\)", options: ["\\sin x", "-\\sin x", "\\cos x", "-\\cos x"], correct: 1 },
+    { q: "\\( (\\text{tg} x)' = ? \\)", options: ["1/\\sin^2 x", "1/\\cos^2 x", "-\\cos x", "1/x"], correct: 1 },
+    { q: "\\( (e^x)' = ? \\)", options: ["e^x", "xe^{x-1}", "1/e^x", "0"], correct: 0 },
+    { q: "\\( (\\ln x)' = ? \\)", options: ["x", "1/x", "e^x", "1"], correct: 1 },
+
+    // --- 5. ГЕОМЕТРИЯ ЖӘНЕ СТЕРЕОМЕТРИЯ ---
+    { q: "Үшбұрыш ауданы:", options: ["ab", "\\frac{1}{2}ah", "a+b+c", "ah"], correct: 1 },
+    { q: "Пифагор теоремасы:", options: ["a+b=c", "a^2-b^2=c^2", "a^2+b^2=c^2", "2a+2b=c"], correct: 2 },
+    { q: "Дөңгелек ауданы:", options: ["2\\pi r", "\\pi r^2", "\\pi d", "4\\pi r^2"], correct: 1 },
+    { q: "Шеңбер ұзындығы:", options: ["\\pi r^2", "2\\pi r", "2\\pi d", "4r"], correct: 1 },
+    { q: "Трапеция ауданы:", options: ["\\frac{a+b}{2}h", "ah", "\\frac{1}{2}ab", "abc"], correct: 0 },
+    { q: "Куб көлемі:", options: ["a^2", "a^3", "6a^2", "4a"], correct: 1 },
+    { q: "Шар көлемі:", options: ["4\\pi r^2", "\\frac{4}{3}\\pi r^3", "\\pi r^2 h", "2\\pi r"], correct: 1 },
+    { q: "Цилиндр көлемі:", options: ["\\pi r^2 h", "2\\pi rh", "\\frac{1}{3}\\pi r^2 h", "abc"], correct: 0 },
+    { q: "Пирамида көлемі:", options: ["Sh", "\\frac{1}{2}Sh", "\\frac{1}{3}Sh", "\\pi r^2 h"], correct: 2 },
+    { q: "Конус көлемі:", options: ["\\pi r^2 h", "\\frac{1}{3}\\pi r^2 h", "\\pi rl", "2\\pi r"], correct: 1 },
+
+    // --- ЖӘНЕ ТАҒЫ 50 ОСЫНДАЙ СҰРАҚТАР (Сыйымдылық үшін қысқартылды, бірақ сен осылай толтыра бересің) ---
+    { q: "Вектор ұзындығы \\( |\\vec{a}(x,y)| \\):", options: ["x+y", "x^2+y^2", "\\sqrt{x^2+y^2}", "xy"], correct: 2 },
+    { q: "\\( \\int x^n dx = ? \\)", options: ["nx^{n-1}", "\\frac{x^{n+1}}{n+1} + C", "x^{n+1}", "x^n"], correct: 1 },
+    { q: "Тік төртбұрыш ауданы:", options: ["a+b", "2(a+b)", "ab", "a^2"], correct: 2 },
+    { q: "Параллелограмм ауданы:", options: ["ah", "1/2 ah", "2a+2b", "ab"], correct: 0 },
+    { q: "Үшбұрышқа сырттай сызылған шеңбер радиусы (R):", options: ["abc / 4S", "abc / 2S", "ab / 2c", "S / p"], correct: 0 },
+    { q: "Үшбұрышқа іштей сызылған шеңбер радиусы (r):", options: ["S / p", "2S / p", "p / S", "abc / S"], correct: 0 },
+    { q: "Тік бұрышты үшбұрышқа сырттай сызылған шеңбер радиусы:", options: ["a+b", "c/2", "ab/2", "h/2"], correct: 1 },
+    { q: "Көпбұрыштың ішкі бұрыштарының қосындысы:", options: ["180(n-1)", "180(n-2)", "360(n-2)", "180n"], correct: 1 },
+    { q: "Дұрыс көпбұрыштың бір бұрышы:", options: ["180(n-2)/n", "180n/2", "360/n", "180(n-1)/n"], correct: 0 },
+    { q: "Ромб ауданы (диагональдары арқылы):", options: ["d1 * d2", "(d1 * d2) / 2", "a * d1", "a^2"], correct: 1 },
+    { q: "Ромб ауданы (бұрышы арқылы):", options: ["a^2 * sinα", "a^2 * cosα", "2a * sinα", "a^2"], correct: 0 },
+
+    // --- 7. СТЕРЕОМЕТРИЯ (Фигуралар қасиеті) ---
+    { q: "Кубтың диагоналі (d):", options: ["a√2", "a√3", "2a", "a^2"], correct: 1 },
+    { q: "Шардың бетінің ауданы (S):", options: ["πr^2", "4πr^2", "2πr^2", "4/3 πr^2"], correct: 1 },
+    { q: "Цилиндрдің толық бетінің ауданы:", options: ["2πrh", "2πr(h+r)", "πr^2h", "2πr+h"], correct: 1 },
+    { q: "Конустың толық бетінің ауданы:", options: ["πrl", "πr(l+r)", "1/3 πr^2h", "2πrl"], correct: 1 },
+    { q: "Пирамиданың бүйір беті (дұрыс):", options: ["1/2 P*l", "Ph", "1/3 Ph", "Sl"], correct: 0 },
+    { q: "Қиық конус көлемі (V):", options: ["1/3 πh(R^2+Rr+r^2)", "πh(R+r)", "1/3 πhRr", "πr^2h"], correct: 0 },
+
+    // --- 8. ТУЫНДЫ ЖӘНЕ ИНТЕГРАЛ (Жалғасы) ---
+    { q: "Күрделі функция туындысы (f(g(x)))':", options: ["f'(g(x))", "f'(x) * g'(x)", "f'(g(x)) * g'(x)", "f'(g'(x))"], correct: 2 },
+    { q: "Бөліндінің туындысы (u/v)':", options: ["u'/v'", "(u'v - uv')/v^2", "(u'v + uv')/v^2", "u'v - uv'"], correct: 1 },
+    { q: "\\( (\\text{ctg } x)' = ? \\)", options: ["1/sin^2x", "-1/sin^2x", "1/cos^2x", "sin x"], correct: 1 },
+    { q: "\\( (\\sqrt{x})' = ? \\)", options: ["1/x", "2√x", "1/(2√x)", "x^2"], correct: 2 },
+    { q: "Ньютон-Лейбниц формуласы:", options: ["F(b) + F(a)", "F(b) - F(a)", "f(b) - f(a)", "F'(x)"], correct: 1 },
+    { q: "\\( \\int \\frac{1}{\\cos^2 x} dx = ? \\)", options: ["tg x + C", "-tg x + C", "ctg x + C", "sin x"], correct: 0 },
+
+    // --- 9. ТРИГОНОМЕТРИЯ (Қосу формулалары) ---
+    { q: "\\( \\sin(\\alpha + \\beta) = ? \\)", options: ["sinα cosβ + cosα sinβ", "sinα cosβ - cosα sinβ", "sinα sinβ + cosα cosβ", "sin(α+β)"], correct: 0 },
+    { q: "\\( \\cos(\\alpha + \\beta) = ? \\)", options: ["cosα cosβ - sinα sinβ", "cosα cosβ + sinα sinβ", "sinα cosβ", "1"], correct: 0 },
+    { q: "Қос бұрыш: \\( \\cos 2\\alpha \\) (тек синус арқылы):", options: ["2sin^2α - 1", "1 - 2sin^2α", "sin^2α - 1", "2sinα"], correct: 1 },
+    { q: "Жарты бұрыш: \\( \\sin^2(\\alpha/2) = ? \\)", options: ["(1 - cosα)/2", "(1 + cosα)/2", "1 - cosα", "sinα/2"], correct: 0 },
+    { q: "\\( \\sin \\alpha + \\sin \\beta = ? \\)", options: ["2sin((α+β)/2)cos((α-β)/2)", "2cos((α+β)/2)sin((α-β)/2)", "sin(α+β)", "2sinα cosβ"], correct: 0 },
+
+    // --- 10. ТЕҢДЕУЛЕР ЖӘНЕ ЖҮЙЕЛЕР ---
+    { q: "Көрсеткіштік теңдеу: \\( a^x = a^b \\) болса:", options: ["x = b", "x = log_a b", "x = a/b", "x = 1"], correct: 0 },
+    { q: "Логарифмдік теңдеу: \\( \\log_a x = b \\) болса:", options: ["x = a^b", "x = b^a", "x = a*b", "x = log_b a"], correct: 0 },
+    { q: "Иррационал теңдеу: \\( \\sqrt{x} = a \\) болса (a≥0):", options: ["x = a", "x = a^2", "x = √a", "шешімі жоқ"], correct: 1 },
+
+    // --- 11. КОМБИНАТОРИКА ЖӘНЕ ЫҚТИМАЛДЫҚ ---
+    { q: "Факториал: \\( 5! = ? \\)", options: ["10", "25", "120", "60"], correct: 2 },
+    { q: "Алмастыру формуласы (P_n):", options: ["n!", "n(n-1)", "n^2", "2n"], correct: 0 },
+    { q: "Оқиғаның ықтималдығы P(A):", options: ["m / n", "n / m", "m * n", "m + n"], correct: 0 },
+    { q: "Қайталанбайтын теру (C_n^k):", options: ["n! / (k!(n-k)!)", "n! / (n-k)!", "k! / n!", "n^k"], correct: 0 },
+
+    // --- 12. ВЕКТОРЛАР ЖӘНЕ КООРДИНАТАЛАР ---
+    { q: "Векторлардың перпендикулярлық шарты:", options: ["a * b = 1", "a * b = 0", "a * b = -1", "a = b"], correct: 1 },
+    { q: "Векторлардың коллинеарлық шарты:", options: ["x1/x2 = y1/y2", "x1*x2 = y1*y2", "x1+x2 = 0", "бұрышы 90°"], correct: 0 },
+    { q: "Кесінді ортасының координатасы x_c:", options: ["(x1+x2)/2", "x1-x2", "x1*x2", "√(x1*x2)"], correct: 0 },
+
+    // --- 13. ФУНКЦИЯ ЖӘНЕ АНЫҚТАЛУ ОБЛЫСЫ ---
+    { q: "\\( y = 1/x \\) функциясының анықталу облысы:", options: ["x > 0", "x ≠ 0", "Барлық сандар", "x > 1"], correct: 1 },
+    { q: "\\( y = \\sqrt{x} \\) функциясының анықталу облысы:", options: ["x ≥ 0", "x > 0", "x ≠ 0", "x ≤ 0"], correct: 0 },
+    { q: "Жұп функция шарты:", options: ["f(-x) = f(x)", "f(-x) = -f(x)", "f(x) = 0", "f(1) = 1"], correct: 0 },
+    { q: "Тақ функция шарты:", options: ["f(-x) = f(x)", "f(-x) = -f(x)", "f(x) = f(y)", "f(x^2) = f(x)"], correct: 1 },
+
+    // --- 14. САНДАР ЖИЫНЫ ---
+    { q: "Натурал сандар жиыны:", options: ["1, 2, 3...", "0, 1, 2...", "-1, 0, 1...", "Рационал сандар"], correct: 0 },
+    { q: "Ең кіші жай сан:", options: ["1", "2", "3", "0"], correct: 1 },
+    { q: "Ең үлкен ортақ бөлгіш (ЕҮОБ):", options: ["Ортақ бөлгіштердің үлкені", "Көбейтіндісі", "Ең кіші еселік", "1"], correct: 0 },
+
+    // --- 15. ҚОСЫМША ФОРМУЛАЛАР ---
+    { q: "Арифметикалық орта:", options: ["(a+b)/2", "√(ab)", "a*b", "a-b"], correct: 0 },
+    { q: "Геометриялық орта:", options: ["(a+b)/2", "√(ab)", "a^2", "a/b"], correct: 1 },
+    { q: "Шеңбердің теңдеуі (ортасы 0,0):", options: ["x^2 + y^2 = R^2", "x + y = R", "x^2 - y^2 = R^2", "y = kx+b"], correct: 0 },
+    { q: "Тік призманың бүйір беті:", options: ["P * h", "S * h", "1/2 P * h", "2(a+b)"], correct: 0 },
+    { q: "tg x-ті sin және cos арқылы жаз:", options: ["cos/sin", "sin/cos", "sin*cos", "1/sin"], correct: 1 },
+    { q: "ctg x-ті sin және cos арқылы жаз:", options: ["sin/cos", "cos/sin", "sin*cos", "1/cos"], correct: 1 },
+    { q: "log_a (a^k) неге тең?", options: ["a", "k", "1", "0"], correct: 1 },
+    { q: "x^2 - 4 = 0 теңдеуінің түбірлері:", options: ["2", "-2; 2", "4", "0"], correct: 1 },
+    { q: "30° радиандық өлшемі:", options: ["π/3", "π/6", "π/4", "π/2"], correct: 1 },
+    { q: "90° радиандық өлшемі:", options: ["π", "π/2", "π/3", "2π"], correct: 1 }
 ];
 
-// ТЕСТТІ ЖҮКТЕУ ФУНКЦИЯСЫ
-function loadQuiz() {
-    const container = document.getElementById('quiz-content');
-    questions.forEach((item, index) => {
-        // Әр сұрақтың HTML шаблоны
-        let html = `
-            <div class="question-block">
-                <p><span class="q-number">${index + 1}</span> <b>\\( ${item.q} \\)</b></p>
-                <div class="options">
-                    ${item.options.map((opt, i) => `
-                        <label>
-                            <input type="radio" name="q${index}" value="${i}"> 
-                            \\( ${opt} \\)
-                        </label>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-        container.innerHTML += html;
+let currentIdx = 0;
+let score = 0;
+const correctSound = new Audio('https://www.myinstants.com/media/sounds/success-1-6297.mp3');
+const wrongSound = new Audio('https://www.myinstants.com/media/sounds/wrong-answer-129254.mp3');
+
+function loadQuestion() {
+    const q = questions[currentIdx];
+    document.getElementById("question").innerHTML = `\\( ${q.q} \\)`;
+    document.getElementById("q-count").innerText = `Сұрақ: ${currentIdx + 1} / ${questions.length}`;
+    document.getElementById("progress").style.width = `${((currentIdx) / questions.length) * 100}%`;
+    
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+    
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerHTML = `\\( ${opt} \\)`;
+        btn.onclick = () => checkAnswer(btn, i);
+        optionsDiv.appendChild(btn);
     });
-    // MathJax арқылы формулаларды әдемілеп қайта құру
+    
+    document.getElementById("next-button").style.display = "none";
     MathJax.typeset();
 }
 
-// НӘТИЖЕНІ ЕСЕПТЕУ ФУНКЦИЯСЫ
-function calculateResult() {
-    let score = 0;
-    let unanswered = 0;
+function checkAnswer(btn, selectedIdx) {
+    const q = questions[currentIdx];
+    const allBtns = document.querySelectorAll(".option-btn");
+    
+    // Барлық батырманы блоктау (екінші рет баса алмауы үшін)
+    allBtns.forEach(b => b.disabled = true);
 
-    questions.forEach((item, index) => {
-        const selected = document.querySelector(`input[name="q${index}"]:checked`);
-        const block = document.getElementsByClassName('question-block')[index];
-        
-        // Бұрынғы бояуларды тазалау
-        block.style.border = "1px solid #e0e0e0";
-        block.style.background = "#fff";
-
-        if (selected) {
-            if (parseInt(selected.value) === item.correct) {
-                score++;
-                block.style.borderColor = "#27ae60"; // Дұрыс болса жасыл
-                block.style.background = "#eafaf1";
-            } else {
-                block.style.borderColor = "#e74c3c"; // Қате болса қызыл
-                block.style.background = "#fdedec";
-            }
-        } else {
-            unanswered++;
-        }
-    });
-
-    const resultArea = document.getElementById('result-area');
-    const scoreText = document.getElementById('score-text');
-    const feedbackText = document.getElementById('feedback-text');
-
-    resultArea.style.display = "block";
-    scoreText.innerHTML = `Сенің нәтижең: ${score} / 50`;
-
-    // Мотивациялық сөздер
-    if (score === 50) {
-        feedbackText.innerHTML = "🏆 ҒАЖАП! Сен Сұлтанби сияқты нағыз чемпионсың! 100% дайындық!";
-        feedbackText.style.color = "#27ae60";
-    } else if (score >= 40) {
-        feedbackText.innerHTML = "🔥 Өте жақсы! Аз ғана қалды, сәл де дайындалсаң бәрі керемет болады!";
-        feedbackText.style.color = "var(--purple)";
-    } else if (score >= 25) {
-        feedbackText.innerHTML = "👍 Жаман емес, бірақ формулаларды әлі де қайталау керек.";
-        feedbackText.style.color = "#f39c12";
+    if (selectedIdx === q.correct) {
+        btn.classList.add("correct");
+        correctSound.play();
+        score++;
     } else {
-        feedbackText.innerHTML = "💪 Еңсеңді түсірме! EasyMath видео сабақтарын қарап, қайта тапсырып көр!";
-        feedbackText.style.color = "#e74c3c";
+        btn.classList.add("wrong");
+        allBtns[q.correct].classList.add("correct"); // Дұрыс жауапты көрсету
+        wrongSound.play();
     }
 
-    // Беттің ең астына (нәтижеге) түсу
-    resultArea.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById("next-button").style.display = "inline-block";
 }
 
-// Бет ашылғанда тестті жүктеу
-window.onload = loadQuiz;
-</script>
+function nextQuestion() {
+    currentIdx++;
+    if (currentIdx < questions.length) {
+        loadQuestion();
+    } else {
+        showFinalResult();
+    }
+}
 
+function showFinalResult() {
+    document.getElementById("question").style.display = "none";
+    document.getElementById("options").style.display = "none";
+    document.getElementById("next-button").style.display = "none";
+    document.getElementById("q-count").style.display = "none";
+    
+    const final = document.getElementById("final-result");
+    final.style.display = "block";
+    document.getElementById("final-score").innerText = `${score} / ${questions.length}`;
+}
+function shuffleQuestions(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+// Тестті бастау алдында сұрақтарды араластырамыз
+shuffleQuestions(questions);
+
+// Енді ғана бірінші сұрақты жүктейміз
+
+window.onload = loadQuestion;
+</script>
 </body>
-</html>
+</html> 
