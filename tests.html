@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyMath — Тест таңдау</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { color: #2c3e50; margin-bottom: 40px; text-align: center; }
+
+        .grid-container {
+            <div class="card basic">
+    <h2>🌱 Бастапқы</h2>
+    <p>Теңдеулер, теңсіздіктер және проценттер. <br>Генератор (шексіз есеп).</p>
+    <a href="test_basic.html" class="btn btn-basic">Бастау</a>
+</div>
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-top: 10px solid;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
+
+        .card h2 { margin-top: 0; font-size: 1.8rem; }
+        .card p { color: #666; font-size: 1.1rem; line-height: 1.5; }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: 0.2s;
+        }
+
+        /* 1. БАСТАУЫШ (ЖАСЫЛ) */
+        .easy { border-color: #2ecc71; }
+        .easy h2 { color: #2ecc71; }
+        .btn-easy { background: #2ecc71; }
+        .btn-easy:hover { background: #27ae60; }
+
+        /* 2. РУСТЮМОВА (КҮЛГІН) */
+        .medium { border-color: #a874d8; }
+        .medium h2 { color: #a874d8; }
+        .btn-medium { background: #a874d8; }
+        .btn-medium:hover { background: #8e44ad; }
+
+        /* 3. HARDCORE (ҚЫЗЫЛ) */
+        .hard { border-color: #e74c3c; }
+        .hard h2 { color: #e74c3c; }
+        .btn-hard { background: #e74c3c; }
+        .btn-hard:hover { background: #c0392b; }
+
+        /* 5. БАСТАПҚЫ СТИЛІ */
+        .basic { border-color: #e67e22; }
+        .basic h2 { color: #e67e22; }
+        .btn-basic { background: #e67e22; }
+        .btn-basic:hover { background: #d35400; }
+
+        /* 4. ФУНКЦИЯЛАР (КӨК) - ЖАҢА */
+        .func { border-color: #2980b9; }
+        .func h2 { color: #2980b9; }
+        .btn-func { background: #2980b9; }
+        .btn-func:hover { background: #3498db; }
+
+        /* Үйге қайту батырмасы */
+        .home-link {
+            margin-top: 40px;
+            color: #555;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Деңгейіңді таңда, батыр! 🚀</h1>
+
+    <div class="grid-container">
+        <div class="card easy">
+            <h2>🐣 Бастауыш</h2>
+            <p>Математиканы жаңадан бастап жүргендерге арналған. <br>Жеңіл сұрақтар, шексіз жаттығу.</p>
+            <a href="test_easy.html" class="btn btn-easy">Бастау</a>
+        </div>
+
+        <div class="card medium">
+            <h2>📚 Рустюмова</h2>
+            <p>Нағыз ҰБТ кітабынан алынған есептер. <br>Иррационал теңдеулер, жүйелер және мәтін есептер.</p>
+            <a href="test_rustyumova.html" class="btn btn-medium">Бастау</a>
+        </div>
+
+        <div class="card hard">
+            <h2>🔥 Сұлтанби Mode</h2>
+            <p>Тек 124+ алғысы келетіндер үшін! <br>Интеграл, туындының мағынасы және қиын логика.</p>
+            <a href="test_hard.html" class="btn btn-hard">Тәуекел ету</a>
+        </div>
+
+        <div class="card func">
+            <h2>📈 Функциялар</h2>
+            <p>Анықталу облысы, мәндер жиыны және графиктер. <br>PDF файлдарынан алынған.</p>
+            <a href="test_functions.html" class="btn btn-func">Тексеру</a>
+        </div>
+    </div>
+
+    <a href="index.html" class="home-link">⬅ Басты бетке қайту</a>
+
+</body>
+</html>

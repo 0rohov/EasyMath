@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyMath — Функциялар</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --blue: #2980b9; /* Функцияларға арналған көк түс */
+            --light-blue: #3498db;
+            --white: #ffffff;
+            --bg-color: #f4f7f6;
+            --success: #2ecc71;
+            --error: #e74c3c;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .test-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            border-top: 8px solid var(--blue);
+            position: relative;
+        }
+
+        .header-title {
+            text-align: center;
+            color: var(--blue);
+            margin-bottom: 20px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--blue), var(--light-blue));
+            transition: width 0.4s ease;
+        }
+
+        .question-box {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+            line-height: 1.6;
+            min-height: 80px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 500px) {
+            .options-grid { grid-template-columns: 1fr; }
+        }
+
+        .option-btn {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+
+        .option-btn:hover {
+            border-color: var(--blue);
+            background: #eaf6fc;
+        }
+
+        .option-btn.correct { background: var(--success); color: white; border-color: var(--success); }
+        .option-btn.wrong { background: var(--error); color: white; border-color: var(--error); }
+
+        .nav-btn {
+            margin-top: 25px;
+            width: 100%;
+            padding: 15px;
+            background: var(--blue);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+
+        .reset-btn {
+            background: transparent;
+            color: #999;
+            border: none;
+            margin-top: 15px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        #result-screen { text-align: center; display: none; }
+        .score-circle {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: var(--blue); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: bold; margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="test-container">
+    <div id="quiz-screen">
+        <h2 class="header-title">📈 Функциялар және Графиктер</h2>
+        <div class="progress-header">
+            <span id="question-counter">Сұрақ 1 / 20</span>
+            <span id="score-counter">Балл: 0</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+        <div class="question-box" id="question-text">Жүктелуде...</div>
+        <div class="options-grid" id="options-container"></div>
+
+        <button class="nav-btn" id="next-btn" onclick="nextQuestion()">Келесі сұрақ ➔</button>
+        <div style="text-align: center;">
+            <button class="reset-btn" onclick="resetQuiz()">Қайта бастау</button>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <h2>Тест аяқталды!</h2>
+        <div class="score-circle" id="final-score">0</div>
+        <p id="motivation-text"></p>
+        <button class="nav-btn" style="display:block" onclick="resetQuiz()">Қайта тапсыру</button>
+        <a href="tests.html" style="display:block; margin-top:15px; color:var(--blue); text-decoration:none;"><b>⬅ Тесттерге қайту</b></a>
+    </div>
+</div>
+
+<script>
+// --- PDF ФАЙЛДАРЫНАН АЛЫНҒАН СҰРАҚТАР ---
+    // --- ФУНКЦИЯЛАР БАЗАСЫ (40 СҰРАҚ) ---
+const questionBank = [
+    // --- 1. АНЫҚТАЛУ ОБЛЫСЫ (D(y)) ---
+    { q: "Функцияның анықталу облысын табыңыз: \\( y = \\sqrt{-x^2 + 7x - 10} \\)", options: ["[2; 5]", "(2; 5)", "[-5; -2]", "[0; 5]"], correct: 0 },
+    { q: "Анықталу облысын табыңыз: \\( y = \\frac{1}{x^2 - 4} \\)", options: ["x \\neq \\pm 2", "x \\neq 2", "(-2; 2)", "x > 2"], correct: 0 },
+    { q: "Функцияның анықталу облысы: \\( y = \\lg(x - 7) \\)", options: ["(7; +\\infty)", "[7; +\\infty)", "x \\neq 7", "(-\\infty; 7)"], correct: 0 },
+    { q: "Анықталу облысы: \\( y = \\sqrt{x+3} + \\sqrt{5-x} \\)", options: ["[-3; 5]", "(-3; 5)", "[-5; 3]", "x \\geq -3"], correct: 0 },
+    { q: "Функцияның анықталу облысы: \\( y = \\frac{x}{\\sqrt{x^2-1}} \\)", options: ["(-\\infty; -1) \\cup (1; +\\infty)", "[-1; 1]", "x > 1", "x \\neq 1"], correct: 0 },
+
+    // --- 2. МӘНДЕР ОБЛЫСЫ (E(y)) ---
+    { q: "Функцияның мәндер облысын табыңыз: \\( y = |\\log_3 x| \\)", options: ["[0; +\\infty)", "R", "(0; +\\infty)", "[-1; 1]"], correct: 0 },
+    { q: "Мәндер жиынын табыңыз: \\( y = 6\\sin x + 8\\cos x \\)", options: ["[-10; 10]", "[-1; 1]", "[-14; 14]", "[-5; 5]"], correct: 0 },
+    { q: "\\( y = x^2 - 5x + 3 \\) функциясының мәндер жиыны:", options: ["[-3,25; +\\infty)", "[3; +\\infty)", "R", "[0; +\\infty)"], correct: 0 },
+    { q: "\\( y = 2018x^3 - 1 \\) функциясының мәндер облысы:", options: ["(-\\infty; +\\infty)", "[-1; +\\infty)", "[2018; +\\infty)", "[0; +\\infty)"], correct: 0 },
+    { q: "\\( y = 5^x + 7 \\) функциясының мәндер жиыны:", options: ["(7; +\\infty)", "[7; +\\infty)", "(0; +\\infty)", "R"], correct: 0 },
+
+    // --- 3. КЕРІ ФУНКЦИЯ (Inverse) ---
+    { q: "\\( y = 6x + 14 \\) функциясына кері функцияны табыңыз:", options: ["y = \\frac{x-14}{6}", "y = \\frac{x+14}{6}", "y = 6x-14", "y = \\frac{1}{6}x+14"], correct: 0 },
+    { q: "\\( y = \\frac{x-1}{x+2} \\) функциясына кері функция:", options: ["y = \\frac{2x+1}{1-x}", "y = \\frac{x+2}{x-1}", "y = \\frac{1-x}{2x+1}", "y = x+2"], correct: 0 },
+    { q: "\\( y = 3^x \\) функциясына кері функция:", options: ["y = \\log_3 x", "y = x^3", "y = \\sqrt[3]{x}", "y = 3x"], correct: 0 },
+
+    // --- 4. ЖҰП ЖӘНЕ ТАҚ ФУНКЦИЯЛАР ---
+    { q: "Төмендегілердің қайсысы тақ функция?", options: ["y = x^3 - x", "y = x^2 + x", "y = \\cos x", "y = |x|"], correct: 0 },
+    { q: "Жұп функцияны анықтаңыз:", options: ["y = x^4 + x^2", "y = x^3", "y = \\sin x", "y = 2x+1"], correct: 0 },
+    { q: "Функцияның жұп-тақтығы: \\( y = x \\cdot \\sin x \\)", options: ["Жұп", "Тақ", "Жұп та емес, тақ та емес", "Периодты"], correct: 0 },
+
+    // --- 5. ТРИГОНОМЕТРИЯЛЫҚ ФУНКЦИЯЛАР ---
+    { q: "\\( y = \\text{ctg } x \\) функциясының ең кіші оң периоды:", options: ["\\pi", "2\\pi", "\\pi/2", "3\\pi"], correct: 0 },
+    { q: "\\( y = \\sin 4x \\) периодын табыңыз:", options: ["\\pi / 2", "2\\pi", "\\pi", "4\\pi"], correct: 0 },
+    { q: "\\( y = \\cos(2x - \\pi/3) \\) ең үлкен мәні:", options: ["1", "2", "0", "1/2"], correct: 0 },
+
+    // --- 6. ГРАФИКТЕР ЖӘНЕ ПАРАБОЛА ---
+    { q: "\\( y = (x+2)^2 - 1 \\) параболасының төбесі қай нүктеде?", options: ["(-2; -1)", "(2; 1)", "(-2; 1)", "(2; -1)"], correct: 0 },
+    { q: "Парабола тармақтары төмен қараған (a < 0) және D < 0 болса:", options: ["График Ох осін қимайды", "2 нүктеде қияды", "Төбесі Ох осінде жатыр", "Тармақтары жоғары"], correct: 0 },
+    { q: "\\( y = -x^2 + 4 \\) графигі Ох осін қай нүктелерде қияды?", options: ["\\pm 2", "0; 4", "4", "жоқ"], correct: 0 },
+
+    // --- 7. КӨРСЕТКІШТІК ЖӘНЕ ЛОГАРИФМДІК ---
+    { q: "Егер \\( f(x) = a^x \\) және \\( f(2) = 1/16 \\) болса, \\( f(3) \\) табыңыз:", options: ["1/64", "1/8", "1/32", "64"], correct: 0 },
+    { q: "\\( f(x) = 2^x \\) берілген. \\( \\frac{1}{2}f(3) \\) мәнін табыңыз:", options: ["4", "8", "16", "2"], correct: 0 },
+    { q: "\\( y = \\log_2(x^2 + 4) \\) функциясының ең кіші мәні:", options: ["2", "0", "4", "1"], correct: 0 },
+
+    // --- 8. КҮРДЕЛІ ЖӘНЕ ТУЫНДЫҒА ДАЙЫНДЫҚ ---
+    { q: "\\( f(x) = x^2 - 1 \\) болса, \\( f(f(1)) \\) неге тең?", options: ["-1", "0", "1", "2"], correct: 0 },
+    { q: "Сызықтық функцияны табыңыз:", options: ["y = 3x - 2", "y = x^2", "y = 1/x", "y = \\sqrt{x}"], correct: 0 },
+    { q: "\\( y = 5 \\) функциясының графигі:", options: ["Ох осіне параллель түзу", "Оу осіне параллель", "Биссектриса", "Парабола"], correct: 0 },
+
+    // Тағы 12 сұрақ PDF бойынша қосылды...
+    { q: "Функцияның нөлдерін табыңыз: \\( y = x^2 - 9 \\)", options: ["\\pm 3", "9", "0", "3"], correct: 0 },
+    { q: "Қай нүкте \\( y = 2x + 1 \\) графигіне тиісті?", options: ["(1; 3)", "(0; 0)", "(2; 4)", "(1; 2)"], correct: 0 },
+    { q: "\\( y = \\sqrt[3]{x} \\) функциясының мәндер жиыны:", options: ["R", "[0; +\\infty)", "(0; +\\infty)", "[-1; 1]"], correct: 0 },
+    { q: "\\( y = \\text{tg } x \\) анықталу облысы:", options: ["x \\neq \\pi/2 + \\pi n", "x \\neq \\pi n", "R", "x > 0"], correct: 0 },
+    { q: "Кері пропорционалдық функция:", options: ["y = k/x", "y = kx", "y = ax^2", "y = x+b"], correct: 0 },
+    { q: "\\( y = x^2 - 4x + 5 \\) параболасының төбесінің х-і:", options: ["2", "-2", "4", "0"], correct: 0 },
+    { q: "\\( y = 3^{x-1} \\) функциясының графигі қай нүкте арқылы өтеді?", options: ["(1; 1)", "(0; 0)", "(1; 3)", "(2; 1)"], correct: 0 },
+    { q: "Егер \\( f(x) = 5x - 2 \\) болса, \\( f(-1) \\) табыңыз:", options: ["-7", "-3", "3", "7"], correct: 0 },
+    { q: "Тақ функцияның графигі неге қарағанда симметриялы?", options: ["Координаталар басына", "Оу осіне", "Ох осіне", "y = x түзуіне"], correct: 0 },
+    { q: "Жұп функцияның графигі неге қарағанда симметриялы?", options: ["Оу осіне", "Координаталар басына", "Ох осіне", "y = 1 түзуіне"], correct: 0 },
+    { q: "\\( y = |x| \\) функциясының ең кіші мәні:", options: ["0", "-1", "жоқ", "1"], correct: 0 },
+    { q: "Функция \\( y = -2x + 3 \\) қай ширектер арқылы өтеді?", options: ["I, II, IV", "I, III", "II, III, IV", "I, II, III"], correct: 0 }
+];
+
+// --- ЛОГИКА (Араластыру + Сақтау) ---
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let selectedOption = null;
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function initQuiz() {
+    startNewQuiz();
+}
+
+function startNewQuiz() {
+    const shuffledRaw = shuffleArray([...questionBank]);
+    currentQuestions = shuffledRaw.map(q => {
+        const correctAnswerText = q.options[q.correct];
+        const shuffledOptions = shuffleArray([...q.options]);
+        const newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+        return { q: q.q, options: shuffledOptions, correct: newCorrectIndex };
+    });
+    currentIndex = 0;
+    score = 0;
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const q = currentQuestions[currentIndex];
+    const total = currentQuestions.length;
+    document.getElementById('question-counter').innerText = `Сұрақ ${currentIndex + 1} / ${total}`;
+    document.getElementById('score-counter').innerText = `Балл: ${score}`;
+    document.getElementById('progress-fill').style.width = `${((currentIndex) / total) * 100}%`;
+    document.getElementById('question-text').innerHTML = q.q;
+
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `\\(${opt}\\)`;
+        btn.onclick = () => selectAnswer(btn, idx);
+        container.appendChild(btn);
+    });
+
+    document.getElementById('next-btn').style.display = 'none';
+    selectedOption = null;
+    MathJax.typeset();
+}
+
+function selectAnswer(btn, index) {
+    if (selectedOption !== null) return;
+    selectedOption = index;
+    const q = currentQuestions[currentIndex];
+    const buttons = document.querySelectorAll('.option-btn');
+    if (index === q.correct) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        buttons[q.correct].classList.add('correct');
+    }
+    document.getElementById('next-btn').style.display = 'block';
+}
+
+function nextQuestion() {
+    currentIndex++;
+    if (currentIndex < currentQuestions.length) {
+        renderQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+function finishQuiz() {
+    document.getElementById('quiz-screen').style.display = 'none';
+    const resScreen = document.getElementById('result-screen');
+    resScreen.style.display = 'block';
+    document.getElementById('final-score').innerText = `${score} / ${currentQuestions.length}`;
+    
+    let msg = score > 15 ? "🔥 Функциялардың шеберісің!" : "📚 Графиктерді қайталау керек!";
+    document.getElementById('motivation-text').innerText = msg;
+}
+
+function resetQuiz() {
+    document.getElementById('result-screen').style.display = 'none';
+    document.getElementById('quiz-screen').style.display = 'block';
+    startNewQuiz();
+}
+
+window.onload = initQuiz;
+</script>
+</body>
+</html>

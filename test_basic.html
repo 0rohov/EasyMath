@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyMath — Бастапқы тақырыптар</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --orange: #e67e22; /* Бастапқы деңгей түсі */
+            --dark-orange: #d35400;
+            --white: #ffffff;
+            --bg-color: #fdf5e6;
+            --success: #2ecc71;
+            --error: #e74c3c;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .test-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            border-top: 8px solid var(--orange);
+            position: relative;
+        }
+
+        .header-title {
+            text-align: center;
+            color: var(--dark-orange);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+        }
+
+        .question-box {
+            font-size: 1.4rem;
+            margin: 30px 0;
+            font-weight: 600;
+            text-align: center;
+            min-height: 80px;
+            color: #333;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background: #fff;
+            border: 2px solid #eee;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.2s;
+            color: #333;
+        }
+
+        .option-btn:hover {
+            border-color: var(--orange);
+            background: #fff5e6;
+        }
+
+        .option-btn.correct { background: var(--success); color: white; border-color: var(--success); }
+        .option-btn.wrong { background: var(--error); color: white; border-color: var(--error); }
+
+        .nav-btn {
+            margin-top: 25px;
+            width: 100%;
+            padding: 15px;
+            background: var(--orange);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+
+        .score-board {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #7f8c8d;
+        }
+
+        .home-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--orange);
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="test-container">
+    <h2 class="header-title">🌱 Бастапқы Тақырыптар</h2>
+    <div class="score-board">Сұрақ: <span id="q-num">1</span> | Ұпай: <span id="score">0</span></div>
+
+    <div class="question-box" id="question">Жүктелуде...</div>
+    <div class="options-grid" id="options"></div>
+
+    <button class="nav-btn" id="next" onclick="generateNext()">Келесі есеп ➔</button>
+    <a href="tests.html" class="home-link">⬅ Артқа қайту</a>
+</div>
+
+<script>
+// --- БАСТАПҚЫ ГЕНЕРАТОР (BASIC ENGINE) ---
+
+class BasicMath {
+    static getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // 1. СЫЗЫҚТЫҚ ТЕҢДЕУ (ax + b = c)
+    static linearEq() {
+        let x = this.getRandomInt(-10, 10); // Жауабы
+        let a = this.getRandomInt(2, 9);
+        let b = this.getRandomInt(-20, 20);
+        let c = a * x + b;
+        
+        let bSign = b >= 0 ? "+" : "";
+        let q = `Теңдеуді шешіңіз: \\( ${a}x ${bSign} ${b} = ${c} \\)`;
+        
+        let opts = [x, x+1, x-1, -x];
+        opts = [...new Set(opts)].sort(() => Math.random() - 0.5); // Араластыру
+        
+        return { q, options: opts, correct: x };
+    }
+
+    // 2. СЫЗЫҚТЫҚ ТЕҢСІЗДІК (ax > b)
+    static linearIneq() {
+        let a = this.getRandomInt(2, 6);
+        let x = this.getRandomInt(-5, 5);
+        let b = a * x; // ax > b => x > b/a
+        
+        let signs = [">", "<", "\\geq", "\\leq"];
+        let sign = signs[Math.floor(Math.random() * signs.length)];
+        
+        let q = `Теңсіздікті шешіңіз: \\( ${a}x ${sign} ${b} \\)`;
+        
+        // Жауап форматтары
+        let ans = "";
+        let wrong1 = "", wrong2 = "", wrong3 = "";
+        
+        if (sign === ">") { ans = `(${x}; +\\infty)`; wrong1 = `(-\\infty; ${x})`; }
+        if (sign === "<") { ans = `(-\\infty; ${x})`; wrong1 = `(${x}; +\\infty)`; }
+        if (sign === "\\geq") { ans = `[${x}; +\\infty)`; wrong1 = `(-\\infty; ${x}]`; }
+        if (sign === "\\leq") { ans = `(-\\infty; ${x}]`; wrong1 = `[${x}; +\\infty)`; }
+        
+        wrong2 = `(${x-1}; +\\infty)`;
+        wrong3 = `(-\\infty; ${x+1})`;
+
+        let opts = [ans, wrong1, wrong2, wrong3].sort(() => Math.random() - 0.5);
+        return { q, options: opts, correct: ans };
+    }
+
+    // 3. КВАДРАТ ТЕҢДЕУ (x^2 + px + q = 0)
+    static quadratic() {
+        let x1 = this.getRandomInt(-7, 7);
+        let x2 = this.getRandomInt(-7, 7);
+        if (x1 === x2) x2++; 
+        
+        let p = -(x1 + x2);
+        let q_val = x1 * x2;
+        
+        let pSign = p >= 0 ? "+" : "";
+        let qSign = q_val >= 0 ? "+" : "";
+        
+        let q = `Түбірлерін табыңыз: \\( x^2 ${pSign} ${p}x ${qSign} ${q_val} = 0 \\)`;
+        let ans = `${Math.min(x1, x2)}; ${Math.max(x1, x2)}`;
+        
+        let opts = [
+            ans,
+            `${-Math.min(x1,x2)}; ${-Math.max(x1,x2)}`,
+            `${Math.min(x1,x2)-1}; ${Math.max(x1,x2)+1}`,
+            `${Math.min(x1,x2)}; ${-Math.max(x1,x2)}`
+        ].sort(() => Math.random() - 0.5);
+
+        return { q, options: opts, correct: ans };
+    }
+
+    // 4. КВАДРАТ ТЕҢСІЗДІК
+    static quadIneq() {
+        let x1 = this.getRandomInt(1, 5);
+        let x2 = x1 + this.getRandomInt(2, 4); // x2 > x1
+        
+        // (x-x1)(x-x2) < 0  => (x1; x2)
+        // x^2 - (x1+x2)x + x1x2 < 0
+        let p = -(x1 + x2);
+        let q_val = x1 * x2;
+        
+        let q = `Теңсіздікті шешіңіз: \\( x^2 ${p}x + ${q_val} < 0 \\)`;
+        let ans = `(${x1}; ${x2})`;
+        
+        let opts = [
+            ans,
+            `(-\\infty; ${x1}) \\cup (${x2}; +\\infty)`,
+            `[${x1}; ${x2}]`,
+            `(${x1}; +\\infty)`
+        ].sort(() => Math.random() - 0.5);
+        
+        return { q, options: opts, correct: ans };
+    }
+
+    // 5. ПРОЦЕНТТЕР
+    static percentage() {
+        let type = Math.random() > 0.5 ? 1 : 2;
+        
+        if (type === 1) {
+            // Санның пайызын табу
+            let num = this.getRandomInt(2, 20) * 10; // 20, 30...
+            let perc = this.getRandomInt(1, 5) * 10; // 10%, 20%...
+            let val = (num * perc) / 100;
+            
+            let q = `\\( ${num} \\) санының \\( ${perc}\\% \\)-ын табыңыз.`;
+            let opts = [val, val*2, val/2, val+10].sort(() => Math.random() - 0.5);
+            return { q, options: opts, correct: val };
+        } else {
+            // Санды пайыз бойынша табу
+            let x = this.getRandomInt(2, 10) * 10; // ізделінді сан
+            let perc = 20; // Оңай болу үшін 20%
+            let val = (x * perc) / 100;
+            
+            let q = `\\( ${perc}\\% \\)-ы \\( ${val} \\) болатын санды табыңыз.`;
+            let opts = [x, x/2, x*2, x+20].sort(() => Math.random() - 0.5);
+            return { q, options: opts, correct: x };
+        }
+    }
+}
+
+// --- LOGIC ---
+let qCounter = 1;
+let score = 0;
+let currentCorrect = null;
+let canClick = true;
+
+function generateNext() {
+    const types = ['linearEq', 'linearIneq', 'quadratic', 'quadIneq', 'percentage'];
+    const randomType = types[Math.floor(Math.random() * types.length)];
+    
+    const data = BasicMath[randomType]();
+    currentCorrect = data.correct;
+    
+    document.getElementById('question').innerHTML = data.q;
+    document.getElementById('q-num').innerText = qCounter;
+    
+    const container = document.getElementById('options');
+    container.innerHTML = '';
+    
+    data.options.forEach(opt => {
+        let btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `\\( ${opt} \\)`;
+        btn.onclick = () => check(btn, opt);
+        container.appendChild(btn);
+    });
+    
+    document.getElementById('next').style.display = 'none';
+    canClick = true;
+    MathJax.typeset();
+}
+
+function check(btn, val) {
+    if (!canClick) return;
+    canClick = false;
+    
+    const isCorrect = (String(val) === String(currentCorrect));
+    
+    if (isCorrect) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        document.querySelectorAll('.option-btn').forEach(b => {
+            if (String(b.innerText).includes(String(currentCorrect)) || b.innerHTML.includes(currentCorrect)) {
+                b.classList.add('correct');
+            }
+        });
+    }
+    
+    document.getElementById('score').innerText = score;
+    document.getElementById('next').style.display = 'block';
+    qCounter++;
+}
+
+window.onload = generateNext;
+</script>
+
+</body>
+</html>

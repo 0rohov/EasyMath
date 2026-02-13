@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyMath — Рустюмова Тесті</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --purple: #9b59b6;
+            --dark-purple: #8e44ad;
+            --white: #ffffff;
+            --bg-color: #f3e5f5;
+            --success: #2ecc71;
+            --error: #e74c3c;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .test-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            border-top: 8px solid var(--purple);
+            position: relative;
+        }
+
+        .header-title {
+            text-align: center;
+            color: var(--dark-purple);
+            margin-bottom: 20px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--purple), var(--dark-purple));
+            transition: width 0.4s ease;
+        }
+
+        .question-box {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+            line-height: 1.6;
+            min-height: 80px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 500px) {
+            .options-grid { grid-template-columns: 1fr; }
+        }
+
+        .option-btn {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+
+        .option-btn:hover {
+            border-color: var(--purple);
+            background: #fdf2ff;
+        }
+
+        .option-btn.correct { background: var(--success); color: white; border-color: var(--success); }
+        .option-btn.wrong { background: var(--error); color: white; border-color: var(--error); }
+
+        .nav-btn {
+            margin-top: 25px;
+            width: 100%;
+            padding: 15px;
+            background: var(--purple);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+
+        .reset-btn {
+            background: transparent;
+            color: #999;
+            border: none;
+            margin-top: 15px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        #result-screen { text-align: center; display: none; }
+        .score-circle {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: var(--purple); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: bold; margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="test-container">
+    <div id="quiz-screen">
+        <h2 class="header-title">📚 Рустюмова: Профильдік Деңгей</h2>
+        <div class="progress-header">
+            <span id="question-counter">Сұрақ 1 / 40</span>
+            <span id="score-counter">Балл: 0</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+        <div class="question-box" id="question-text">Жүктелуде...</div>
+        <div class="options-grid" id="options-container"></div>
+
+        <button class="nav-btn" id="next-btn" onclick="nextQuestion()">Келесі сұрақ ➔</button>
+        <div style="text-align: center;">
+            <button class="reset-btn" onclick="resetQuiz()">Қайта бастау</button>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <h2>Тест аяқталды!</h2>
+        <div class="score-circle" id="final-score">0</div>
+        <p id="motivation-text"></p>
+        <button class="nav-btn" style="display:block" onclick="resetQuiz()">Қайта тапсыру</button>
+        <a href="tests.html" style="display:block; margin-top:15px; color:var(--purple); text-decoration:none;"><b>⬅ Тесттерге қайту</b></a>
+    </div>
+</div>
+
+<script>
+// --- РУСТЮМОВА (СОҢҒЫ БЕТТЕР: ТУЫНДЫ, ИНТЕГРАЛ, СТЕРЕОМЕТРИЯ) ---
+const questionBank = [
+    // ==========================================
+    // 1. ТУЫНДЫ (DERIVATIVE)
+    // ==========================================
+    { q: "Функцияның туындысын табыңыз: \\( f(x) = x^5 - 4x^3 + 2 \\)", options: ["5x^4 - 12x^2", "5x^4 - 12x", "x^4 - 12x^2", "5x^5 - 4x^3"], correct: 0 },
+    { q: "\\( y = \\sin 3x \\) функциясының туындысы:", options: ["3\\cos 3x", "\\cos 3x", "-3\\cos 3x", "3\\sin 3x"], correct: 0 },
+    { q: "\\( f(x) = \\sqrt{x} \\) функциясының туындысы:", options: ["1/(2\\sqrt{x})", "1/\\sqrt{x}", "2\\sqrt{x}", "x"], correct: 0 },
+    { q: "Туындыны есептеңіз: \\( y = e^{2x} \\)", options: ["2e^{2x}", "e^{2x}", "e^x", "2e^x"], correct: 0 },
+    { q: "\\( f(x) = \\ln(2x+1) \\) туындысы:", options: ["2/(2x+1)", "1/(2x+1)", "2x/(2x+1)", "2\\ln(2x)"], correct: 0 },
+    { q: "\\( y = x \\cdot \\sin x \\) туындысы (көбейтінді):", options: ["\\sin x + x\\cos x", "\\cos x", "x\\cos x", "\\sin x - x\\cos x"], correct: 0 },
+    { q: "\\( y = \\frac{x}{x+1} \\) туындысы (бөлінді):", options: ["1/(x+1)^2", "-1/(x+1)^2", "x/(x+1)^2", "1"], correct: 0 },
+    { q: "Күрделі функция туындысы: \\( y = (3x-5)^4 \\)", options: ["12(3x-5)^3", "4(3x-5)^3", "3(3x-5)^3", "12(3x-5)"], correct: 0 },
+    { q: "\\( f(x) = x^3 - 3x \\) функциясының экстремум нүктелері:", options: ["\\pm 1", "0; 1", "1; 3", "жоқ"], correct: 0 },
+    { q: "Жанаманың теңдеуін жазыңыз: \\( f(x)=x^2 \\), \\( x_0=1 \\)", options: ["y = 2x - 1", "y = 2x + 1", "y = x + 1", "y = 2x"], correct: 0 },
+    { q: "\\( y = \\cos^2 x \\) туындысы:", options: ["-\\sin 2x", "2\\cos x", "-2\\sin x", "\\sin 2x"], correct: 0 },
+    { q: "Функцияның өсу аралығын табыңыз: \\( f(x) = 2x^2 - 4x \\)", options: ["[1; +\\infty)", "(-∞; 1]", "[0; +\\infty)", "(-∞; 0]"], correct: 0 },
+    { q: "Нүктенің жылдамдығын табыңыз \\( S(t) = t^2 + 3t \\), \\( t=2 \\) с.", options: ["7 м/с", "5 м/с", "10 м/с", "3 м/с"], correct: 0 },
+    { q: "Екінші ретті туынды \\( f''(x) \\): \\( f(x) = x^3 \\)", options: ["6x", "3x^2", "6", "3x"], correct: 0 },
+    { q: "\\( f(x) = \\text{tg } 2x \\) туындысы:", options: ["2/\\cos^2 2x", "1/\\cos^2 2x", "2\\text{ctg } 2x", "2\\cos 2x"], correct: 0 },
+    { q: "\\( f(x) = 2^x \\) туындысы:", options: ["2^x \\ln 2", "2^x", "x 2^{x-1}", "2^x / \\ln 2"], correct: 0 },
+    { q: "Жанаманың бұрыштық коэффициенті \\( k \\): \\( y=x^2-3x \\), \\( x_0=2 \\)", options: ["1", "2", "-1", "0"], correct: 0 },
+    { q: "\\( y = 1/x \\) туындысы:", options: ["-1/x^2", "1/x^2", "\\ln x", "-x"], correct: 0 },
+    { q: "Функцияның сындық нүктелері: \\( y = x^3 - 3x^2 \\)", options: ["0; 2", "0; 3", "1; 2", "0; -2"], correct: 0 },
+    { q: "\\( f(x) = \\log_3 x \\) туындысы:", options: ["1/(x \\ln 3)", "1/x", "\\ln 3 / x", "3^x"], correct: 0 },
+
+    // ==========================================
+    // 2. АЛҒАШҚЫ ФУНКЦИЯ ЖӘНЕ ИНТЕГРАЛ
+    // ==========================================
+    { q: "\\( \\int x^4 dx \\) есептеңіз:", options: ["x^5/5 + C", "4x^3 + C", "x^5 + C", "5x^5 + C"], correct: 0 },
+    { q: "\\( \\int \\sin x dx \\) есептеңіз:", options: ["-\\cos x + C", "\\cos x + C", "\\sin x + C", "-\\sin x"], correct: 0 },
+    { q: "\\( \\int e^{2x} dx \\) есептеңіз:", options: ["0.5 e^{2x} + C", "2e^{2x} + C", "e^{2x} + C", "e^x + C"], correct: 0 },
+    { q: "Анықталған интеграл: \\( \\int_0^1 x^2 dx \\)", options: ["1/3", "1/2", "1", "3"], correct: 0 },
+    { q: "Анықталған интеграл: \\( \\int_0^{\\pi} \\sin x dx \\)", options: ["2", "0", "1", "-2"], correct: 0 },
+    { q: "\\( \\int \\frac{1}{x} dx \\) есептеңіз:", options: ["\\ln|x| + C", "-1/x^2", "x + C", "e^x"], correct: 0 },
+    { q: "\\( \\int (2x + 1) dx \\) есептеңіз:", options: ["x^2 + x + C", "2x^2 + C", "x^2 + C", "2"], correct: 0 },
+    { q: "Қисық сызықты трапецияның ауданы: \\( y=x^2, y=0, x=1, x=2 \\)", options: ["7/3", "1/3", "2", "3"], correct: 0 },
+    { q: "\\( \\int \\frac{1}{\\cos^2 x} dx \\) есептеңіз:", options: ["\\text{tg } x + C", "-\\text{ctg } x", "\\cos x", "\\sin x"], correct: 0 },
+    { q: "\\( \\int_1^2 3x^2 dx \\)", options: ["7", "8", "6", "9"], correct: 0 },
+    { q: "\\( F(x) \\) табыңыз, егер \\( f(x)=4x^3 \\)", options: ["x^4 + C", "12x^2", "x^3", "4x^4"], correct: 0 },
+    { q: "\\( \\int \\sqrt{x} dx \\) есептеңіз:", options: ["\\frac{2}{3}x^{3/2} + C", "\\frac{1}{2\\sqrt{x}}", "x^{3/2}", "2\\sqrt{x}"], correct: 0 },
+    { q: "\\( \\int 5 dx \\) есептеңіз:", options: ["5x + C", "0", "5", "x+5"], correct: 0 },
+    { q: "Ньютон-Лейбниц формуласы:", options: ["F(b) - F(a)", "F(a) - F(b)", "f(b) - f(a)", "F(b) + F(a)"], correct: 0 },
+    { q: "\\( \\int_0^1 e^x dx \\)", options: ["e - 1", "e", "1", "e + 1"], correct: 0 },
+    { q: "\\( \\int \\frac{dx}{x+2} \\)", options: ["\\ln|x+2| + C", "\\ln|x| + 2", "-1/(x+2)^2", "x+2"], correct: 0 },
+    { q: "\\( \\int \\cos 3x dx \\)", options: ["\\frac{1}{3}\\sin 3x + C", "3\\sin 3x", "\\sin 3x", "-\\sin 3x"], correct: 0 },
+    { q: "Анықталған интеграл: \\( \\int_{-1}^1 x^3 dx \\)", options: ["0", "2", "1/4", "-2"], correct: 0 },
+    { q: "\\( \\int (x^2 - x) dx \\)", options: ["x^3/3 - x^2/2 + C", "2x - 1", "x^3 - x^2", "x^2/2 - x"], correct: 0 },
+    { q: "Қисық сызықты трапецияның ауданы S = ?", options: ["\\int_a^b f(x) dx", "f(b)-f(a)", "f'(x)", "ab"], correct: 0 },
+
+    // ==========================================
+    // 3. СТЕРЕОМЕТРИЯ (КӨЛЕМДЕР МЕН БЕТТЕР)
+    // ==========================================
+    { q: "Кубтың қыры 3 см. Көлемін табыңыз:", options: ["27", "9", "54", "36"], correct: 0 },
+    { q: "Кубтың қыры 2 см. Толық бетінің ауданы:", options: ["24", "8", "16", "12"], correct: 0 },
+    { q: "Тік бұрышты параллелепипед: 2, 3, 4. Көлемі?", options: ["24", "12", "9", "20"], correct: 0 },
+    { q: "Шардың радиусы 3 см. Көлемі?", options: ["36\\pi", "12\\pi", "108\\pi", "9\\pi"], correct: 0 },
+    { q: "Шардың бетінің ауданы (R=2):", options: ["16\\pi", "8\\pi", "4\\pi", "12\\pi"], correct: 0 },
+    { q: "Цилиндр: R=2, h=5. Көлемі?", options: ["20\\pi", "10\\pi", "40\\pi", "25\\pi"], correct: 0 },
+    { q: "Цилиндрдің бүйір бетінің ауданы: R=3, h=4.", options: ["24\\pi", "12\\pi", "48\\pi", "6\\pi"], correct: 0 },
+    { q: "Конус: R=3, h=4. Жасаушысы (l)?", options: ["5", "6", "7", "\\sqrt{7}"], correct: 0 },
+    { q: "Конустың көлемі: R=3, h=4.", options: ["12\\pi", "36\\pi", "16\\pi", "24\\pi"], correct: 0 },
+    { q: "Дұрыс төртбұрышты пирамиданың табан қабырғасы 6, биіктігі 4. Көлемі?", options: ["48", "144", "36", "72"], correct: 0 },
+    { q: "Кубтың диагоналі \\( d = a\\sqrt{3} \\). Егер a=2 болса:", options: ["2\\sqrt{3}", "4", "2", "3\\sqrt{2}"], correct: 0 },
+    { q: "Призманың көлемі V = ?", options: ["S_{таб} \\cdot h", "1/3 S_{таб} h", "S_{таб} \\cdot l", "P \\cdot h"], correct: 0 },
+    { q: "Пирамиданың көлемі V = ?", options: ["1/3 S_{таб} \\cdot h", "S_{таб} \\cdot h", "1/2 S_{таб} h", "P \\cdot h"], correct: 0 },
+    { q: "Шар көлемінің формуласы:", options: ["4/3 \\pi R^3", "4\\pi R^2", "\\pi R^2 h", "1/3 \\pi R^3"], correct: 0 },
+    { q: "Конустың толық беті:", options: ["\\pi R(l+R)", "\\pi Rl", "\\pi R^2", "2\\pi R(l+R)"], correct: 0 },
+    { q: "Тік бұрышты параллелепипедтің диагоналі (2, 2, 1):", options: ["3", "4", "5", "\\sqrt{5}"], correct: 0 },
+    { q: "Цилиндрдің осьтік қимасы - квадрат, қабырғасы 4. Цилиндр көлемі?", options: ["16\\pi", "32\\pi", "8\\pi", "4\\pi"], correct: 0 },
+    { q: "Қиық конус көлемінің формуласында не бар?", options: ["R^2 + Rr + r^2", "R+r", "R-r", "Rr"], correct: 0 },
+    { q: "Дұрыс тетраэдрдің қыры 1-ге тең. Толық беті?", options: ["\\sqrt{3}", "1", "\\sqrt{2}", "2"], correct: 0 },
+    { q: "Сфераның теңдеуі: \\( x^2+y^2+z^2=25 \\). Радиус?", options: ["5", "25", "10", "1"], correct: 0 },
+    { q: "Вектордың ұзындығы: \\( \\vec{a}(1; 2; 2) \\)", options: ["3", "\\sqrt{5}", "9", "5"], correct: 0 },
+    { q: "Екі вектордың скаляр көбейтіндісі: \\( \\vec{a}(1;2), \\vec{b}(3;4) \\)", options: ["11", "10", "7", "5"], correct: 0 },
+    { q: "Перпендикуляр векторлардың скаляр көбейтіндісі:", options: ["0", "1", "-1", "ab"], correct: 0 },
+    { q: "Кесінді ортасы: A(0;0), B(4;6).", options: ["(2; 3)", "(4; 6)", "(2; 2)", "(3; 3)"], correct: 0 },
+    { q: "Нүктелер арақашықтығы: A(1;1), B(4;5).", options: ["5", "4", "3", "7"], correct: 0 },
+
+    // ==========================================
+    // 4. ТРИГОНОМЕТРИЯ ЖӘНЕ ТЕҢДЕУЛЕР (СОҢҒЫ БӨЛІМ)
+    // ==========================================
+    { q: "Теңдеуді шешіңіз: \\( \\sin x = 1/2 \\)", options: ["(-1)^k \\pi/6 + \\pi k", "\\pi/3 + 2\\pi k", "\\pi/6 + 2\\pi k", "\\pm \\pi/6 + 2\\pi k"], correct: 0 },
+    { q: "Теңдеуді шешіңіз: \\( \\cos x = 0 \\)", options: ["\\pi/2 + \\pi k", "\\pi k", "2\\pi k", "\\pi/2 + 2\\pi k"], correct: 0 },
+    { q: "Теңдеуді шешіңіз: \\( \\text{tg } x = 1 \\)", options: ["\\pi/4 + \\pi k", "\\pi/4 + 2\\pi k", "-\\pi/4 + \\pi k", "\\pi k"], correct: 0 },
+    { q: "Ықшамдаңыз: \\( 1 - \\sin^2 \\alpha \\)", options: ["\\cos^2 \\alpha", "\\sin^2 \\alpha", "1", "\\text{tg}^2 \\alpha"], correct: 0 },
+    { q: "Негізгі тепе-теңдік: \\( \\sin^2 x + \\cos^2 x = ? \\)", options: ["1", "0", "-1", "2"], correct: 0 },
+    { q: "Есептеңіз: \\( \\sin 30^\\circ + \\cos 60^\\circ \\)", options: ["1", "\\sqrt{3}", "0.5", "0"], correct: 0 },
+    { q: "Келтіру формуласы: \\( \\sin(\\pi/2 + \\alpha) \\)", options: ["\\cos \\alpha", "-\\cos \\alpha", "\\sin \\alpha", "-\\sin \\alpha"], correct: 0 },
+    { q: "Қос бұрыш: \\( \\sin 2\\alpha \\)", options: ["2\\sin\\alpha\\cos\\alpha", "\\cos^2\\alpha - \\sin^2\\alpha", "2\\sin\\alpha", "2\\cos\\alpha"], correct: 0 },
+    { q: "Теңдеуді шешіңіз: \\( 2\\cos x = \\sqrt{3} \\)", options: ["\\pm \\pi/6 + 2\\pi k", "\\pm \\pi/3 + 2\\pi k", "\\pi/6 + \\pi k", "\\pi/3"], correct: 0 },
+    { q: "Функцияның периоды: \\( y = \\sin x \\)", options: ["2\\pi", "\\pi", "\\pi/2", "4\\pi"], correct: 0 },
+    { q: "Көрсеткіштік теңдеу: \\( 3^x = 81 \\)", options: ["4", "3", "5", "2"], correct: 0 },
+    { q: "Логарифмдік теңсіздік: \\( \\log_2 x > 3 \\)", options: ["(8; +\\infty)", "(3; +\\infty)", "(-∞; 8)", "[8; +\\infty)"], correct: 0 },
+    { q: "Иррационал теңсіздік: \\( \\sqrt{x} < 3 \\)", options: ["[0; 9)", "(0; 9)", "(-∞; 9)", "x < 9"], correct: 0 },
+    { q: "Модуль теңсіздік: \\( |x| < 5 \\)", options: ["(-5; 5)", "(-∞; 5)", "(0; 5)", "[-5; 5]"], correct: 0 },
+    { q: "Тригонометриялық теңсіздік: \\( \\sin x > 0 \\)", options: ["(2\\pi k; \\pi + 2\\pi k)", "(\\pi k; 2\\pi k)", "(0; \\pi)", "R"], correct: 0 },
+    { q: "Арифметикалық прогрессия: 2, 5, 8... \\( a_{10} \\)?", options: ["29", "27", "30", "32"], correct: 0 },
+    { q: "Геометриялық прогрессия: 2, 6, 18... \\( S_4 \\)?", options: ["80", "78", "82", "26"], correct: 0 },
+    { q: "Шексіз кемімелі прогрессия қосындысы: 1, 1/2, 1/4...", options: ["2", "1.5", "3", "1"], correct: 0 },
+    { q: "Биномдық жіктеу: \\( (a+b)^2 \\)", options: ["a^2+2ab+b^2", "a^2+b^2", "a^2-2ab+b^2", "a+b"], correct: 0 },
+    { q: "Ықтималдық: Ойын сүйегін тастағанда 6 түсуі:", options: ["1/6", "1/2", "1/3", "5/6"], correct: 0 },
+
+    // ==========================================
+    // 5. МӘТІНДІК ЖӘНЕ ҚОРЫТЫНДЫ ЕСЕПТЕР (СОҢЫ)
+    // ==========================================
+    { q: "Араласпа: 200г 10%-дық ерітіндіде қанша тұз бар?", options: ["20г", "10г", "30г", "200г"], correct: 0 },
+    { q: "Жылдамдық: 120 км жолды 2 сағатта жүрсе, V=?", options: ["60 км/сағ", "50 км/сағ", "70 км/сағ", "100 км/сағ"], correct: 0 },
+    { q: "Жұмыс: 1-ші құбыр 3 сағ, 2-ші құбыр 6 сағ толтырады. Бірге?", options: ["2 сағ", "4.5 сағ", "3 сағ", "9 сағ"], correct: 0 },
+    { q: "Пайыз: Бағасы 1000 тг, 20% арзандады. Жаңа баға?", options: ["800", "820", "1200", "900"], correct: 0 },
+    { q: "Сандар: Екі санның қосындысы 10, көбейтіндісі 21.", options: ["3 және 7", "4 және 6", "2 және 8", "5 және 5"], correct: 0 },
+    { q: "Моторлы қайық ағыспен 20 км/сағ, ағысқа қарсы 16 км/сағ. Ағыс жылдамдығы?", options: ["2 км/сағ", "4 км/сағ", "18 км/сағ", "1 км/сағ"], correct: 0 },
+    { q: "Комбинаторика: 5 адамды неше тәсілмен кезекке тұрғызуға болады?", options: ["120", "25", "5", "100"], correct: 0 },
+    { q: "Теру: \\( C_5^2 \\) есептеңіз:", options: ["10", "20", "5", "12"], correct: 0 },
+    { q: "Алмастыру: \\( P_4 \\) есептеңіз:", options: ["24", "12", "16", "4"], correct: 0 },
+    { q: "Логика: 1, 4, 9, 16, ? Келесі сан:", options: ["25", "20", "24", "30"], correct: 0 },
+    { q: "Функцияның үзіліс нүктесі: \\( y = 1/(x-2) \\)", options: ["2", "0", "1", "жоқ"], correct: 0 },
+    { q: "Асимптота: \\( y = 1/x \\) көлденең асимптотасы:", options: ["y=0", "x=0", "y=1", "y=x"], correct: 0 },
+    { q: "Парабола төбесі: \\( y = x^2 - 2x + 1 \\)", options: ["(1; 0)", "(0; 1)", "(1; 1)", "(-1; 0)"], correct: 0 },
+    { q: "Шеңбер теңдеуі: центрі (0;0), R=5.", options: ["x^2 + y^2 = 25", "x^2 + y^2 = 5", "x+y=5", "x^2 - y^2 = 25"], correct: 0 },
+    { q: "Соңғы сұрақ: \\( \\sin^2 x + \\cos^2 x + \\text{tg } x \\cdot \\text{ctg } x \\)", options: ["2", "1", "0", "3"], correct: 0 }
+];
+
+// --- ЛОГИКА ---
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let selectedOption = null;
+
+const STORAGE_KEY_QUESTIONS = 'rustyumova_questions';
+const STORAGE_KEY_INDEX = 'rustyumova_index';
+const STORAGE_KEY_SCORE = 'rustyumova_score';
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function initQuiz() {
+    const savedQuestions = localStorage.getItem(STORAGE_KEY_QUESTIONS);
+    const savedIndex = localStorage.getItem(STORAGE_KEY_INDEX);
+    const savedScore = localStorage.getItem(STORAGE_KEY_SCORE);
+
+    if (savedQuestions && savedIndex !== null) {
+        currentQuestions = JSON.parse(savedQuestions);
+        currentIndex = parseInt(savedIndex);
+        score = parseInt(savedScore || 0);
+        if (currentIndex >= currentQuestions.length) startNewQuiz();
+        else renderQuestion();
+    } else {
+        startNewQuiz();
+    }
+}
+
+function startNewQuiz() {
+    // 40 сұрақты кездейсоқ таңдап алу (100-дің ішінен)
+    const shuffledRaw = shuffleArray([...questionBank]);
+    const selected = shuffledRaw.slice(0, 40);
+
+    currentQuestions = selected.map(q => {
+        const correctAnswerText = q.options[q.correct];
+        const shuffledOptions = shuffleArray([...q.options]);
+        const newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+        return { q: q.q, options: shuffledOptions, correct: newCorrectIndex };
+    });
+
+    currentIndex = 0;
+    score = 0;
+    saveProgress();
+    renderQuestion();
+}
+
+function saveProgress() {
+    localStorage.setItem(STORAGE_KEY_QUESTIONS, JSON.stringify(currentQuestions));
+    localStorage.setItem(STORAGE_KEY_INDEX, currentIndex);
+    localStorage.setItem(STORAGE_KEY_SCORE, score);
+}
+
+function renderQuestion() {
+    const q = currentQuestions[currentIndex];
+    const total = currentQuestions.length;
+
+    document.getElementById('question-counter').innerText = `Сұрақ ${currentIndex + 1} / ${total}`;
+    document.getElementById('score-counter').innerText = `Балл: ${score}`;
+    document.getElementById('progress-fill').style.width = `${((currentIndex) / total) * 100}%`;
+    document.getElementById('question-text').innerHTML = q.q;
+
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `\\(${opt}\\)`;
+        btn.onclick = () => selectAnswer(btn, idx);
+        container.appendChild(btn);
+    });
+
+    document.getElementById('next-btn').style.display = 'none';
+    selectedOption = null;
+    MathJax.typeset();
+}
+
+function selectAnswer(btn, index) {
+    if (selectedOption !== null) return;
+    selectedOption = index;
+
+    const q = currentQuestions[currentIndex];
+    const buttons = document.querySelectorAll('.option-btn');
+
+    if (index === q.correct) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        buttons[q.correct].classList.add('correct');
+    }
+
+    saveProgress();
+    document.getElementById('next-btn').style.display = 'block';
+}
+
+function nextQuestion() {
+    currentIndex++;
+    if (currentIndex < currentQuestions.length) {
+        saveProgress();
+        renderQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+function finishQuiz() {
+    document.getElementById('quiz-screen').style.display = 'none';
+    const resScreen = document.getElementById('result-screen');
+    resScreen.style.display = 'block';
+    
+    document.getElementById('final-score').innerText = `${score} / ${currentQuestions.length}`;
+    
+    let msg = "";
+    const percentage = (score / currentQuestions.length) * 100;
+    if (percentage >= 90) msg = "🏆 Керемет! Нағыз Профи!";
+    else if (percentage >= 70) msg = "🔥 Жақсы нәтиже!";
+    else msg = "📚 Көбірек дайындалу керек.";
+    
+    document.getElementById('motivation-text').innerText = msg;
+    
+    localStorage.removeItem(STORAGE_KEY_QUESTIONS);
+    localStorage.removeItem(STORAGE_KEY_INDEX);
+    localStorage.removeItem(STORAGE_KEY_SCORE);
+}
+
+function resetQuiz() {
+    localStorage.removeItem(STORAGE_KEY_QUESTIONS);
+    localStorage.removeItem(STORAGE_KEY_INDEX);
+    localStorage.removeItem(STORAGE_KEY_SCORE);
+    
+    document.getElementById('result-screen').style.display = 'none';
+    document.getElementById('quiz-screen').style.display = 'block';
+    startNewQuiz();
+}
+
+window.onload = initQuiz;
+</script>
+
+</body>
+</html>

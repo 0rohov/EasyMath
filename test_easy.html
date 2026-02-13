@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyMath — Шексіз Тренажер</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --cyan: #3cd3d3;
+            --purple: #a874d8;
+            --white: #ffffff;
+            --bg: #f0f2f5;
+            --text: #2d3436;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: var(--white);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #636e72;
+            font-weight: 600;
+        }
+
+        .question-box {
+            font-size: 1.4rem;
+            margin: 30px 0;
+            font-weight: bold;
+            color: var(--text);
+            min-height: 60px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 15px;
+            border: 2px solid #dfe6e9;
+            background: #fff;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--text);
+        }
+
+        .btn:hover {
+            border-color: var(--cyan);
+            background: #e0fbfb;
+        }
+
+        .correct { background: #2ecc71 !important; color: white; border-color: #2ecc71 !important; }
+        .wrong { background: #e74c3c !important; color: white; border-color: #e74c3c !important; }
+
+        .next-btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            background: var(--purple);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+
+        .stats {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #b2bec3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <span id="q-num">Сұрақ: 1</span>
+        <span id="score">Балл: 0</span>
+    </div>
+
+    <div class="question-box" id="question">Жүктелуде...</div>
+
+    <div class="options-grid" id="options"></div>
+
+    <button class="next-btn" id="next" onclick="generateNext()">Келесі сұрақ ➔</button>
+
+    <div class="stats">
+        EasyMath AI Generator &copy; 2026
+    </div>
+</div>
+
+<script>
+// --- МАТЕМАТИКАЛЫҚ ГЕНЕРАТОР (INFINITE ENGINE) ---
+
+class MathGenerator {
+    static getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    static getDistractors(correct, type = 'int') {
+        let options = new Set([correct]);
+        while (options.size < 4) {
+            let val;
+            if (type === 'int') {
+                val = correct + this.getRandomInt(-5, 5);
+                if (val === correct) val = correct + this.getRandomInt(1, 10);
+            } else {
+                val = (parseFloat(correct) + (Math.random() - 0.5) * 2).toFixed(2);
+            }
+            options.add(val);
+        }
+        return Array.from(options).sort(() => Math.random() - 0.5);
+    }
+
+    // 1. Квадрат теңдеу генераторы
+    static quadratic() {
+        // Түбірлері бүтін сан болатын теңдеу құрамыз
+        let x1 = this.getRandomInt(-10, 10);
+        let x2 = this.getRandomInt(-10, 10);
+        if (x1 === 0) x1 = 1; 
+        
+        // Виет теоремасы бойынша
+        let b = -(x1 + x2);
+        let c = x1 * x2;
+        
+        // Теңдеу түрі: x^2 + bx + c = 0
+        let signB = b >= 0 ? "+" : "";
+        let signC = c >= 0 ? "+" : "";
+        
+        let q = `Теңдеудің түбірлерін табыңыз: \\( x^2 ${signB}${b}x ${signC}${c} = 0 \\)`;
+        let correct = x1 < x2 ? `${x1}; ${x2}` : `${x2}; ${x1}`;
+        
+        // Қате жауаптар
+        let opts = [
+            correct,
+            `${-x1}; ${-x2}`,
+            `${x1}; ${-x2}`,
+            `${-x1}; ${x2}`
+        ];
+        
+        // Дубликат болмау үшін тексеру
+        opts = [...new Set(opts)];
+        while(opts.length < 4) opts.push(`${this.getRandomInt(-10,10)}; ${this.getRandomInt(-10,10)}`);
+
+        return { q, options: opts.sort(() => Math.random() - 0.5), correct: correct };
+    }
+
+    // 2. Арифметикалық прогрессия
+    static progression() {
+        let a1 = this.getRandomInt(1, 20);
+        let d = this.getRandomInt(2, 10);
+        let n = this.getRandomInt(5, 15);
+        let an = a1 + (n - 1) * d;
+
+        let q = `Арифметикалық прогрессия: \\( a_1=${a1}, d=${d} \\). \\( a_{${n}} \\)-ші мүшесін табыңыз.`;
+        let options = this.getDistractors(an);
+        
+        return { q, options, correct: an };
+    }
+
+    // 3. Логарифм
+    static logarithm() {
+        let base = this.getRandomInt(2, 5);
+        let power = this.getRandomInt(2, 4);
+        let value = Math.pow(base, power);
+
+        let q = `Есептеңіз: \\( \\log_{${base}} ${value} \\)`;
+        let options = this.getDistractors(power);
+        
+        return { q, options, correct: power };
+    }
+
+    // 4. Пайыздар
+    static percentage() {
+        let num = this.getRandomInt(10, 50) * 10; // 100, 150...
+        let percent = this.getRandomInt(1, 9) * 10; // 20%, 30%...
+        let ans = (num * percent) / 100;
+
+        let q = `\\( ${num} \\) санының \\( ${percent}\\% \\)-ын табыңыз.`;
+        let options = this.getDistractors(ans);
+        
+        return { q, options, correct: ans };
+    }
+
+    // 5. Туынды
+    static derivative() {
+        let n = this.getRandomInt(2, 5);
+        let k = this.getRandomInt(2, 6);
+        // f(x) = k * x^n
+        // f'(x) = k*n * x^(n-1)
+        
+        let q = `Функцияның туындысын табыңыз: \\( f(x) = ${k}x^{${n}} \\)`;
+        let ans = `${k*n}x^{${n-1}}`;
+        
+        let options = [
+            ans,
+            `${k}x^{${n-1}}`,
+            `${k*n}x^{${n}}`,
+            `${n}x^{${n-1}}`
+        ].sort(() => Math.random() - 0.5);
+
+        return { q, options, correct: ans };
+    }
+
+    // 6. Тригонометрия
+    static trigonometry() {
+        const angles = [30, 45, 60, 90];
+        const funcs = ["sin", "cos", "tg"];
+        
+        let ang = angles[Math.floor(Math.random() * angles.length)];
+        let func = funcs[Math.floor(Math.random() * funcs.length)];
+        
+        // Жауаптар базасы
+        let map = {
+            "sin30": "1/2", "sin45": "\\sqrt{2}/2", "sin60": "\\sqrt{3}/2", "sin90": "1",
+            "cos30": "\\sqrt{3}/2", "cos45": "\\sqrt{2}/2", "cos60": "1/2", "cos90": "0",
+            "tg30": "1/\\sqrt{3}", "tg45": "1", "tg60": "\\sqrt{3}", "tg90": "\\infty"
+        };
+        
+        let key = func + ang;
+        if (!map[key]) return this.quadratic(); // Fallback
+
+        let q = `Мәнін табыңыз: \\( \\${func} ${ang}^\\circ \\)`;
+        let correct = map[key];
+        
+        let pool = ["0", "1", "1/2", "\\sqrt{3}/2", "\\sqrt{2}/2", "\\sqrt{3}", "1/\\sqrt{3}"];
+        let options = [correct];
+        while (options.length < 4) {
+            let r = pool[Math.floor(Math.random() * pool.length)];
+            if (!options.includes(r)) options.push(r);
+        }
+        
+        return { q, options: options.sort(() => Math.random() - 0.5), correct: correct };
+    }
+}
+
+// --- LOGIC ---
+let qCounter = 1;
+let score = 0;
+let currentCorrect = null;
+let canClick = true;
+
+function generateNext() {
+    const types = ['quadratic', 'progression', 'logarithm', 'percentage', 'derivative', 'trigonometry'];
+    const randomType = types[Math.floor(Math.random() * types.length)];
+    
+    // Генератордан жаңа есеп аламыз
+    const data = MathGenerator[randomType]();
+    
+    currentCorrect = data.correct;
+    
+    document.getElementById('question').innerHTML = data.q;
+    document.getElementById('q-num').innerText = `Сұрақ: ${qCounter}`;
+    document.getElementById('score').innerText = `Балл: ${score}`;
+    
+    const container = document.getElementById('options');
+    container.innerHTML = '';
+    
+    data.options.forEach(opt => {
+        let btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerHTML = `\\( ${opt} \\)`;
+        btn.onclick = () => check(btn, opt);
+        container.appendChild(btn);
+    });
+    
+    document.getElementById('next').style.display = 'none';
+    canClick = true;
+    MathJax.typeset();
+}
+
+function check(btn, val) {
+    if (!canClick) return;
+    canClick = false;
+    
+    const btns = document.querySelectorAll('.btn');
+    let isCorrect = (String(val) === String(currentCorrect));
+    
+    if (isCorrect) {
+        btn.classList.add('correct');
+        score++;
+        document.getElementById('score').innerText = `Балл: ${score}`;
+    } else {
+        btn.classList.add('wrong');
+        btns.forEach(b => {
+            // Дұрыс жауапты табу (текст немесе формула бойынша)
+            if (b.innerText.includes(currentCorrect) || b.innerHTML.includes(currentCorrect)) {
+                b.classList.add('correct');
+            }
+        });
+    }
+    
+    qCounter++;
+    document.getElementById('next').style.display = 'block';
+}
+
+// Алғашқы жүктеу
+window.onload = generateNext;
+
+</script>
+
+</body>
+</html>

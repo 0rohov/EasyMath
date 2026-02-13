@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyMath — HARDCORE Тренажер</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --dark: #2d3436;
+            --red: #d63031; /* Қиын екенін білдіретін қызыл түс */
+            --white: #ffffff;
+            --bg: #2c3e50;
+            --text: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        .container {
+            background: var(--dark);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+            border: 2px solid var(--red);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #bdc3c7;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .level-badge {
+            background: var(--red);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .question-box {
+            font-size: 1.5rem;
+            margin: 40px 0;
+            font-weight: bold;
+            color: var(--white);
+            min-height: 80px;
+            line-height: 1.6;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 20px;
+            border: 2px solid #636e72;
+            background: #34495e;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.3s;
+            color: var(--white);
+        }
+
+        .btn:hover {
+            border-color: var(--red);
+            background: #2c3e50;
+            transform: translateY(-2px);
+        }
+
+        .correct { background: #27ae60 !important; border-color: #27ae60 !important; }
+        .wrong { background: #c0392b !important; border-color: #c0392b !important; }
+
+        .next-btn {
+            width: 100%;
+            padding: 18px;
+            margin-top: 30px;
+            background: var(--red);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 5px 15px rgba(214, 48, 49, 0.4);
+        }
+
+        .next-btn:hover { background: #ff4757; }
+
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <span id="score">Ұпай: 0</span>
+        <span class="level-badge">HARD MODE 🔥</span>
+    </div>
+
+    <div class="question-box" id="question">Жүктелуде...</div>
+
+    <div class="options-grid" id="options"></div>
+
+    <button class="next-btn" id="next" onclick="generateHardQuestion()">Келесі қиын сұрақ ➔</button>
+</div>
+
+<script>
+// --- HARDCORE MATH ENGINE ---
+
+class HardMath {
+    static getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Кездейсоқ жауаптар генераторы (Дұрыс жауаптан сәл ауытқиды)
+    static getDistractors(correct, format = 'int') {
+        let set = new Set([correct]);
+        while (set.size < 4) {
+            let fake;
+            if (format === 'int') {
+                fake = parseInt(correct) + this.getRandomInt(-5, 5);
+                if (fake === parseInt(correct)) fake += 10;
+            } else {
+                // Бөлшек немесе түбір болса, мәтіндік өзгеріс жасаймыз
+                // Бұл күрделірек, сондықтан қарапайым рандом қолданамыз
+                fake = parseFloat(correct) + this.getRandomInt(-3, 3); 
+            }
+            set.add(fake);
+        }
+        return Array.from(set).sort(() => Math.random() - 0.5);
+    }
+
+    // 1. АНЫҚТАЛҒАН ИНТЕГРАЛ (Polynomial)
+    static integral() {
+        // int(kx^2 + bx) from 0 to a
+        let k = this.getRandomInt(1, 3) * 3; // 3-ке бөлінетін сан (бөлшек болмау үшін)
+        let b = this.getRandomInt(2, 6) * 2;
+        let upper = this.getRandomInt(1, 3);
+        
+        let term1 = (k * Math.pow(upper, 3)) / 3;
+        let term2 = (b * Math.pow(upper, 2)) / 2;
+        let ans = term1 + term2;
+
+        let q = `Анықталған интегралды есептеңіз: \\( \\int_{0}^{${upper}} (${k}x^2 + ${b}x) dx \\)`;
+        let opts = [ans, ans+upper, ans-1, ans*2].sort(() => Math.random() - 0.5);
+        
+        return { q, options: opts, correct: ans };
+    }
+
+    // 2. ТРИГОНОМЕТРИЯЛЫҚ ТЕҢДЕУ (Қос бұрыш)
+    static hardTrig() {
+        // 2cos^2(x) - 1 = val => cos(2x) = val
+        let angles = [0, 30, 45, 60, 90];
+        let vals = {0:1, 30:"\\frac{\\sqrt{3}}{2}", 45:"\\frac{\\sqrt{2}}{2}", 60:"1/2", 90:0};
+        
+        let choice = angles[Math.floor(Math.random() * angles.length)];
+        let valStr = vals[choice];
+        
+        let q = `Теңдеуді шешіңіз: \\( \\cos 2x = ${valStr} \\)`;
+        
+        // Дұрыс жауап
+        let rad = choice === 0 ? "0" : (choice === 90 ? "\\frac{\\pi}{4}" : `\\frac{\\pi}{${180/(choice*2)}}`);
+        let ans = `\\pm ${rad} + \\pi n`;
+        
+        // Қате жауаптар
+        let opts = [
+            ans,
+            `\\pm ${rad} + 2\\pi n`,
+            `(-1)^n ${rad} + \\pi n`,
+            `${rad} + \\pi n`
+        ];
+        
+        return { q, options: opts.sort(() => Math.random() - 0.5), correct: ans };
+    }
+
+    // 3. ЛОГАРИФМДІК ТЕҢСІЗДІК
+    static logInequality() {
+        // log_a (x - b) < c
+        let a = this.getRandomInt(2, 3);
+        let b = this.getRandomInt(1, 5);
+        let c = this.getRandomInt(1, 2);
+        
+        // a > 1 болғандықтан: 0 < x - b < a^c
+        // b < x < a^c + b
+        let upper = Math.pow(a, c) + b;
+        
+        let q = `Теңсіздікті шешіңіз: \\( \\log_{${a}} (x - ${b}) < ${c} \\)`;
+        let ans = `(${b}; ${upper})`;
+        
+        let opts = [
+            ans,
+            `(-${upper}; ${b})`,
+            `(${b}; \\infty)`,
+            `[${b}; ${upper}]`
+        ];
+        
+        return { q, options: opts.sort(() => Math.random() - 0.5), correct: ans };
+    }
+
+    // 4. ШЕКСІЗ ГЕОМЕТРИЯЛЫҚ ПРОГРЕССИЯ
+    static infGeoProg() {
+        // S = b1 / (1 - q)
+        let b1 = this.getRandomInt(2, 10) * 3; // 3-ке еселік
+        let q_num = 1;
+        let q_den = 3; // q = 1/3
+        
+        // S = b1 / (2/3) = b1 * 3 / 2
+        // b1 жұп сан болсын
+        b1 = this.getRandomInt(1, 5) * 2; 
+        
+        let ans = (b1 * 3) / 2;
+        
+        let q = `Шексіз кемімелі геометриялық прогрессияның қосындысын табыңыз: \\( b_1 = ${b1}, q = \\frac{1}{3} \\)`;
+        
+        let opts = [ans, ans+1, ans*2, ans-0.5].map(x => x.toString());
+        return { q, options: opts.sort(() => Math.random() - 0.5), correct: ans.toString() };
+    }
+
+    // 5. ТУЫНДЫНЫҢ ГЕОМЕТРИЯЛЫҚ МАҒЫНАСЫ (Жанама)
+    static tangentSlope() {
+        // f(x) = x^2 + bx + c нүктесіндегі x0 бұрыштық коэффициент (k)
+        let b = this.getRandomInt(-5, 5);
+        let c = this.getRandomInt(-10, 10);
+        let x0 = this.getRandomInt(1, 3);
+        
+        // f'(x) = 2x + b
+        // k = 2*x0 + b
+        let k = 2 * x0 + b;
+        
+        let q = `\\( f(x) = x^2 ${b>=0?'+':''}${b}x ${c>=0?'+':''}${c} \\) функциясына \\( x_0 = ${x0} \\) нүктесінде жүргізілген жанаманың бұрыштық коэффициентін табыңыз.`;
+        
+        let opts = [k, k+1, k-2, -k].map(String);
+        return { q, options: opts.sort(() => Math.random() - 0.5), correct: String(k) };
+    }
+}
+
+// --- LOGIC ---
+let score = 0;
+let currentCorrect = null;
+let canClick = true;
+
+function generateHardQuestion() {
+    const types = ['integral', 'hardTrig', 'logInequality', 'infGeoProg', 'tangentSlope'];
+    const randomType = types[Math.floor(Math.random() * types.length)];
+    
+    // Генерация
+    const data = HardMath[randomType]();
+    
+    currentCorrect = data.correct;
+    
+    document.getElementById('question').innerHTML = data.q;
+    
+    const container = document.getElementById('options');
+    container.innerHTML = '';
+    
+    data.options.forEach(opt => {
+        let btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerHTML = `\\( ${opt} \\)`;
+        btn.onclick = () => check(btn, opt);
+        container.appendChild(btn);
+    });
+    
+    document.getElementById('next').style.display = 'none';
+    canClick = true;
+    MathJax.typeset();
+}
+
+function check(btn, val) {
+    if (!canClick) return;
+    canClick = false;
+    
+    const isCorrect = (val === currentCorrect);
+    
+    if (isCorrect) {
+        btn.classList.add('correct');
+        score += 5; // Қиын болған соң 5 балл
+    } else {
+        btn.classList.add('wrong');
+        // Дұрысын көрсету
+        document.querySelectorAll('.btn').forEach(b => {
+            if (b.innerText.includes(currentCorrect) || b.innerHTML.includes(currentCorrect)) {
+                b.classList.add('correct');
+            }
+        });
+    }
+    
+    document.getElementById('score').innerText = `Ұпай: ${score}`;
+    document.getElementById('next').style.display = 'block';
+}
+
+window.onload = generateHardQuestion;
+</script>
+
+</body>
+</html>
