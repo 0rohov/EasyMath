@@ -20,19 +20,27 @@
 
         body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
 
+        /* HEADER */
         header { background-color: var(--primary); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .logo { font-size: 1.2rem; font-weight: bold; }
         .logo span { color: var(--accent); }
         .timer-display { font-family: monospace; font-size: 1.4rem; border: 1px solid var(--accent); padding: 5px 15px; border-radius: 5px; color: var(--accent); background: rgba(0,0,0,0.2); }
 
+        /* MAIN */
         .main-container { display: flex; flex: 1; overflow: hidden; }
         .question-area { flex: 1; padding: 30px; overflow-y: auto; background: white; }
         .q-header { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 10px; text-transform: uppercase; font-weight: bold; }
         .q-text { font-size: 1.25rem; font-weight: 500; margin-bottom: 20px; line-height: 1.5; }
 
-        .q-image-container { text-align: center; margin-bottom: 20px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; background: #f9f9f9; display: none; }
+        /* СУРЕТ ОРНЫ */
+        .q-image-container {
+            text-align: center; margin-bottom: 20px; padding: 10px;
+            border: 1px dashed #ccc; border-radius: 8px; background: #f9f9f9;
+            display: none;
+        }
         .q-image { max-width: 100%; max-height: 350px; height: auto; border-radius: 5px; }
 
+        /* ВАРИАНТТАР */
         .options-list { display: grid; grid-template-columns: 1fr; gap: 12px; }
         .options-list.grid-view { grid-template-columns: 1fr 1fr; }
 
@@ -41,9 +49,10 @@
         .option-label.active { background-color: var(--selected); border-color: var(--selected-border); }
 
         .marker { width: 25px; height: 25px; border: 2px solid #bdc3c7; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold; color: #7f8c8d; font-size: 0.9rem; }
-        .option-label.multiple .marker { border-radius: 4px; }
+        .option-label.multiple .marker { border-radius: 4px; } 
         .option-label.active .marker { border-color: var(--selected-border); background: var(--selected-border); color: white; }
 
+        /* SIDEBAR */
         .sidebar-nav { width: 320px; background: #fff; border-left: 1px solid #ddd; display: flex; flex-direction: column; }
         .nav-title { padding: 15px; background: #ecf0f1; color: var(--primary); font-weight: bold; text-align: center; border-bottom: 1px solid #ddd; }
         .grid-wrapper { padding: 15px; overflow-y: auto; flex: 1; }
@@ -56,15 +65,20 @@
         .finish-btn { margin: 15px; padding: 15px; background-color: #e74c3c; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .finish-btn:hover { background-color: #c0392b; }
 
+        /* CONTROLS */
         .controls { padding: 15px 30px; background: white; border-top: 1px solid #ddd; display: flex; justify-content: space-between; }
         .nav-btn { padding: 10px 30px; background-color: var(--primary); color: white; border: none; border-radius: 5px; font-size: 1rem; cursor: pointer; }
         .nav-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
 
+        /* MODAL */
         #result-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; }
         .modal-box { background: white; padding: 40px; border-radius: 10px; text-align: center; width: 90%; max-width: 400px; }
         .score-val { font-size: 3rem; font-weight: 800; color: var(--primary); margin: 20px 0; }
-        
-        @media (max-width: 768px) { .sidebar-nav { display: none; } .options-list.grid-view { grid-template-columns: 1fr; } }
+
+        @media (max-width: 768px) {
+            .sidebar-nav { display: none; }
+            .options-list.grid-view { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -77,14 +91,19 @@
 <div class="main-container">
     <div class="question-area">
         <div class="q-header">Сұрақ <span id="q-num">1</span> / <span id="q-total"></span></div>
+        
         <div class="q-image-container" id="q-img-box">
             <img src="" id="q-img" class="q-image" alt="Сұрақ суреті">
         </div>
+
         <div id="q-content"></div>
     </div>
+
     <div class="sidebar-nav">
         <div class="nav-title">Математика</div>
-        <div class="grid-wrapper"><div class="question-grid" id="q-grid"></div></div>
+        <div class="grid-wrapper">
+            <div class="question-grid" id="q-grid"></div>
+        </div>
         <button class="finish-btn" onclick="finishTest()">Аяқтау</button>
     </div>
 </div>
@@ -111,8 +130,9 @@
 </div>
 
 <script>
-    // --- ДЕРЕКТЕР БАЗАСЫ ---
+    // --- АҚЫЛЫ НҰСҚА 1 (ТАЛДАНҒАН) - НАҚТЫ СҰРАҚТАР ---
     const quizData = [
+        // 1-20 СҰРАҚТАР
         { q: "Өрнекті ықшамдаңыз: \\( \\sqrt{(3+\\sqrt{3})^2} + \\sqrt{(\\sqrt{3}-2)^2} \\)", opts: ["4", "5", "3", "\\sqrt{3}"], correct: [1], type: "single" },
         { q: "Амалдарды орындаңыз: \\( |||-2|-3|-4| \\)", opts: ["3", "5", "9", "7"], correct: [1], type: "single" },
         { q: "Өрнекті ықшамдаңыз: \\( \\frac{1}{1+ctg^2 2\\alpha} + \\frac{1}{1+tg^2 2\\alpha} \\)", opts: ["\\sin 2\\alpha", "\\cos 2\\alpha", "2", "1"], correct: [3], type: "single" },
@@ -134,19 +154,19 @@
         { q: "ABCD теңбүйірлі трапециясына сырттай шеңбер сызылған. \\( \\angle CAD = 60^\\circ, AD = 5, \\angle ABC \\) бұрышы шеңбердің диаметріне тіреледі. Шеңбердің радиусын табыңыз.", opts: ["5", "4", "6", "3"], correct: [0], type: "single" },
         { q: "\\( 1; -\\frac{1}{2}; \\frac{1}{4}; -\\frac{1}{8}; ... \\) тізбегі берілген. Алғашқы теріс төрт мүшесінің қосындысын табыңыз.", opts: ["-\\frac{17}{16}", "-\\frac{25}{32}", "-\\frac{85}{128}", "-\\frac{13}{64}"], correct: [2], type: "single" },
 
-        // 21-30
+        // --- 21-30 МӘТІНДІК ЕСЕПТЕР (ШТРИХ-КОД ЖӘНЕ БАСҚА) ---
         { q: "<b>Мәтіндік есеп: Штрих-код</b><br>Егер алғашқы жеті цифр 2357148 болса, онда тексеруші цифр:", img: "q21.jpg", opts: ["2", "8", "7", "0"], correct: [1], type: "single" },
-        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>10000Y01 штрих-кодының белгісіз Y цифрын табыңыз:", img: "q22.jpg", opts: ["1", "0", "3", "6"], correct: [0], type: "single" },
-        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>173610C7 штрих-кодындағы белгісіз C санын табыңыз:", img: "q23.jpg", opts: ["1", "3", "5", "4"], correct: [2], type: "single" },
-        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>712T5134 штрих-кодының белгісіз T цифрын табыңыз:", img: "q24.jpg", opts: ["3", "5", "2", "6"], correct: [1], type: "single" },
-        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>Штрих-кодта өндірушінің мемлекеті жайлы ақпарат беретін цифрлардың қосындысы 15-ке тең, өндірушінің беретін коды 3104, ал тексеруші сан 5-ке тең. Екінші орында тұратын цифрдың барлық мүмкін мәндерінің қосындысын табыңыз.", img: "q25.jpg", opts: ["15", "17", "13", "12"], correct: [2], type: "single" },
+        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>10000Y01 штрих-кодының белгісіз Y цифрын табыңыз:", img: "q21.jpg", opts: ["1", "0", "3", "6"], correct: [0], type: "single" },
+        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>173610C7 штрих-кодындағы белгісіз C санын табыңыз:", img: "q21.jpg", opts: ["1", "3", "5", "4"], correct: [2], type: "single" },
+        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>712T5134 штрих-кодының белгісіз T цифрын табыңыз:", img: "q21.jpg", opts: ["3", "5", "2", "6"], correct: [1], type: "single" },
+        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>Штрих-кодта өндірушінің мемлекеті жайлы ақпарат беретін цифрлардың қосындысы 15-ке тең, өндірушінің беретін коды 3104, ал тексеруші сан 5-ке тең. Екінші орында тұратын цифрдың барлық мүмкін мәндерінің қосындысын табыңыз.", img: "q21.jpg", opts: ["15", "17", "13", "12"], correct: [2], type: "single" },
         { q: "\\( \\vec{a}(1; 0; 2) \\) және \\( \\vec{b}(2; 1; 0) \\) векторларының арасындағы бұрышты табыңыз", img: "q26.jpg", opts: ["\\( \\arccos 0,4 \\)", "\\( \\arccos 0,1 \\)", "\\( \\arccos 0,2 \\)", "\\( \\arccos 0,6 \\)"], correct: [0], type: "single" },
         { q: "\\( x^6 - x^5 - 2x^4 + x^2 - x - 2 \\) көпмүшесінің бүтін түбірлерінің саны", img: "q27.jpg", opts: ["2", "3", "1", "6"], correct: [0], type: "single" },
         { q: "Теңдеуді шешіңіз: \\( \\log_8(x-2) + \\log_8(x+2) = \\log_8(4x+41) \\)", img: "q28.jpg", opts: ["4", "9; -5", "5; -9", "9"], correct: [3], type: "single" },
         { q: "Суретте берілген теңсіздіктің шешімі (боялған аймақ):", img: "q29.jpg", opts: ["\\( y < -3x + 7 \\)", "\\( y \\le -3x + 7 \\)", "\\( y > -2x + 8 \\)", "\\( y \\ge -2x + 8 \\)"], correct: [1], type: "single" },
         { q: "\\( \\int_0^1 (2x-1)^6 dx \\) интегралын есептеңіз", img: "q30.jpg", opts: ["\\frac{1}{7}", "\\frac{1}{6}", "\\frac{2}{7}", "\\frac{3}{7}"], correct: [0], type: "single" },
 
-        // 31-40
+        // --- 31-40 СҰРАҚТАР (8 ВАРИАНТ) ---
         { q: "\\( A(m; -n) \\) нүктесі \\( y = x^2 - 3x + 2 \\) параболасының төбесі. Сәйкестендіріңіз:<br>А) m мәні<br>B) n мәні", img: "q31.jpg", opts: ["-0,35", "0,25", "1,5", "2,5", "-1,5", "0,5", "1,25", "-2,5"], correct: [1, 2], type: "multiple" },
         { q: "Дөңгелекке ұзындығы \\( 10\\sqrt{3} \\) см-ге тең және диагоналі енімен 60 градус бұрыш жасайтын тіктөртбұрыш іштей сызылған. Сәйкестендіріңіз:<br>A) Дөңгелектің диаметрі<br>B) Тіктөртбұрыштың ені", img: "q32.jpg", opts: ["5 см", "10 см", "15 см", "20 см", "25 см", "12 см", "8 см", "18 см"], correct: [1, 3], type: "multiple" },
         { q: "\\( 0,6xy^2 \\cdot (5xy^6)^2 \\) өрнегін стандарт түрге келтіріп, сәйкестендіріңіз:<br>A) Бірмүшенің дәрежесі<br>B) Бірмүшенің коэффициенті", img: "q33.jpg", opts: ["14", "15", "16", "17", "18", "12", "13", "10"], correct: [1, 3], type: "multiple" },
@@ -161,7 +181,7 @@
 
     let userAnswers = new Array(quizData.length).fill(null).map(() => []);
     let currentQ = 0;
-    let timeLeft = 90 * 60;
+    let timeLeft = 90 * 60; // 90 МИНУТ
 
     function init() {
         document.getElementById('q-total').innerText = quizData.length;
@@ -176,7 +196,8 @@
         let h = Math.floor(timeLeft / 3600);
         let m = Math.floor((timeLeft % 3600) / 60);
         let s = timeLeft % 60;
-        document.getElementById('timer').innerText = `${h<10?'0':''}${h}:${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
+        document.getElementById('timer').innerText = 
+            `${h < 10 ? '0' : ''}${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
     function renderGrid() {
@@ -195,14 +216,17 @@
     function loadQuestion(idx) {
         currentQ = idx;
         document.getElementById('q-num').innerText = idx + 1;
+        
         document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('current'));
         document.getElementById(`q-btn-${idx}`).classList.add('current');
 
         const qData = quizData[idx];
         let contentHtml = `<div class="q-text">${qData.q}</div>`;
-
+        
+        // СУРЕТ
         const imgContainer = document.getElementById('q-img-box');
         const imgElement = document.getElementById('q-img');
+
         if (qData.img) {
             imgContainer.style.display = "block";
             imgElement.src = qData.img;
@@ -212,14 +236,18 @@
             imgContainer.style.display = "none";
         }
 
+        // ВАРИАНТТАР (GRID for 8 options)
         const gridClass = qData.opts.length > 5 ? 'grid-view' : '';
         contentHtml += `<div class="options-list ${gridClass}">`;
+        
         const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
         qData.opts.forEach((opt, i) => {
             const isSelected = userAnswers[idx].includes(i);
             const activeClass = isSelected ? 'active' : '';
             const typeClass = qData.type === 'multiple' ? 'multiple' : '';
             const letter = letters[i] || '';
+            
             contentHtml += `
                 <div class="option-label ${activeClass} ${typeClass}" onclick="toggleOption(${i}, '${qData.type}')">
                     <div class="marker">${letter}</div>
@@ -228,9 +256,10 @@
             `;
         });
         contentHtml += `</div>`;
+
         document.getElementById('q-content').innerHTML = contentHtml;
         MathJax.typeset();
-        
+
         document.getElementById('btn-prev').disabled = (idx === 0);
         document.getElementById('btn-next').disabled = (idx === quizData.length - 1);
     }
@@ -240,10 +269,13 @@
             userAnswers[currentQ] = [optIdx];
         } else {
             const index = userAnswers[currentQ].indexOf(optIdx);
-            if (index > -1) userAnswers[currentQ].splice(index, 1);
-            else userAnswers[currentQ].push(optIdx);
+            if (index > -1) {
+                userAnswers[currentQ].splice(index, 1);
+            } else {
+                userAnswers[currentQ].push(optIdx);
+            }
         }
-        // Update UI
+        
         const opts = document.querySelectorAll('.option-label');
         opts.forEach((el, i) => {
             if (userAnswers[currentQ].includes(i)) {
@@ -258,15 +290,19 @@
                 el.querySelector('.marker').style.color = '#7f8c8d';
             }
         });
-        // Update Grid
+
         const gridBtn = document.getElementById(`q-btn-${currentQ}`);
-        if (userAnswers[currentQ].length > 0) gridBtn.classList.add('answered');
-        else gridBtn.classList.remove('answered');
+        if (userAnswers[currentQ].length > 0) {
+            gridBtn.classList.add('answered');
+        } else {
+            gridBtn.classList.remove('answered');
+        }
     }
 
     function nextQuestion() {
         if (currentQ < quizData.length - 1) loadQuestion(currentQ + 1);
     }
+
     function prevQuestion() {
         if (currentQ > 0) loadQuestion(currentQ - 1);
     }
@@ -276,53 +312,60 @@
         quizData.forEach((q, i) => {
             const userAns = userAnswers[i].sort().join(',');
             const correctAns = q.correct.sort().join(',');
-            if (userAns === correctAns && userAns !== "") score++;
+            if (userAns === correctAns && userAns !== "") {
+                score++;
+            }
         });
+
         document.getElementById('final-score').innerText = `${score} / ${quizData.length}`;
         document.getElementById('result-modal').style.display = 'flex';
     }
 
-    // --- TELEGRAM ФУНКЦИЯСЫ ---
-   function sendToTelegram() {
+    // --- TELEGRAM-ҒА ЖІБЕРУ ---
+    function sendToTelegram() {
         const botToken = "8326562957:AAFgwfes-ul2rDLV02LJVkkJ_bOzwIRpVxc";
         const chatId = "1221733414";
         
-        // МЫНА ЖЕРГЕ ЖАҢАҒЫ ҰЗЫН СІЛТЕМЕНІ ҚОЙ:
-        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbwrNcJXavlcgsefnaZrt-ito-L1pshsDOUN_FpyNGfL-xESl-a_AB--WJyHbZkOdyGGdw/exec"; 
-
         let studentName = prompt("Нәтижені сақтау үшін аты-жөніңізді жазыңыз:");
         
         if (studentName) {
             let btn = document.querySelector("#result-modal button");
-            if(btn) { btn.disabled = true; btn.innerText = "Жіберілуде..."; }
+            if(btn) {
+                btn.disabled = true;
+                btn.innerText = "Жіберілуде...";
+            }
 
             let scoreText = document.getElementById("final-score").innerText;
+            
+            let message = `
+<b>ЖАҢА НӘТИЖЕ!</b> 🚀
+👤 <b>Оқушы:</b> ${studentName}
+📝 <b>Тест:</b> Ақылы Нұсқа 1 (Математика)
+✅ <b>Балл:</b> ${scoreText}
+⏰ <b>Уақыт:</b> ${new Date().toLocaleTimeString()}
+            `;
 
-            // 1. GOOGLE SHEETS-КЕ ЖІБЕРУ (Автоматты түрде)
-            fetch(googleScriptUrl + "?action=save&name=" + encodeURIComponent(studentName) + "&score=" + encodeURIComponent(scoreText), {
-                method: "POST",
-                mode: "no-cors" // Бұл қате шықпас үшін керек
-            }).then(() => {
-                console.log("Saved to Sheets");
-            });
-
-            // 2. TELEGRAM-ҒА ЖІБЕРУ
-            let message = `🚀 ЖАҢА НӘТИЖЕ!%0A👤 Оқушы: ${studentName}%0A✅ Балл: ${scoreText}`;
-            let url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${message}`;
-
-            fetch(url)
-            .then(res => {
-                if (res.ok) {
-                    alert("Нәтиже қабылданды! Рейтингке қосылды ✅");
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Нәтиже мұғалімге сәтті жіберілді! ✅");
                     if(btn) btn.innerText = "Жіберілді";
                 } else {
-                    alert("Қате! Токенді тексеріңіз.");
+                    alert("Қате! Жіберілмеді. Токенді тексеріңіз.");
                     if(btn) { btn.disabled = false; btn.innerText = "Қайта жіберу"; }
                 }
             })
-            .catch(err => {
-                window.open(url, '_blank');
-                if(btn) btn.innerText = "Жіберілді";
+            .catch(error => {
+                alert("Интернет жоқ немесе қате шықты.");
+                if(btn) { btn.disabled = false; btn.innerText = "Қайта жіберу"; }
             });
         }
     }
@@ -330,5 +373,17 @@
     window.onload = init;
 </script>
 
+<script>
+    window.embeddedChatbotConfig = {
+        chatbotId: "CYmZMhYswu1mbnW0ZQPAC",
+        domain: "www.chatbase.co"
+    }
+</script>
+<script
+    src="https://www.chatbase.co/embed.min.js"
+    chatbotId="CYmZMhYswu1mbnW0ZQPAC"
+    domain="www.chatbase.co"
+    defer>
+</script>
 </body>
 </html>
