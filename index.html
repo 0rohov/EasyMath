@@ -3,338 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ҰБТ — Ақылы Нұсқа 1 (Математика)</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>EasyMath — ҰБТ-ға дайындық</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary: #2c3e50;
-            --accent: #f1c40f;
-            --selected: #d6eaf8;
-            --selected-border: #3498db;
-            --text: #333;
-            --bg: #f4f6f7;
+            --cyan: #3cd3d3;
+            --purple: #a874d8;
+            --dark-purple: #8e44ad;
+            --dark: #2c3e50;
+            --white: #ffffff;
+            --orange: #ff9f43;
+            --gold: #f1c40f;
         }
 
-        body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
-
-        /* HEADER */
-        header { background-color: var(--primary); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; }
-        .logo { font-size: 1.2rem; font-weight: bold; }
-        .logo span { color: var(--accent); }
-        .timer-display { font-family: monospace; font-size: 1.4rem; border: 1px solid var(--accent); padding: 5px 15px; border-radius: 5px; color: var(--accent); background: rgba(0,0,0,0.2); }
-
-        /* MAIN */
-        .main-container { display: flex; flex: 1; overflow: hidden; }
-        .question-area { flex: 1; padding: 30px; overflow-y: auto; background: white; }
-        .q-header { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 10px; text-transform: uppercase; font-weight: bold; }
-        
-        /* Ұзын формулалар телефонда тасып кетпеуі үшін */
-        .q-text { font-size: 1.25rem; font-weight: 500; margin-bottom: 20px; line-height: 1.5; overflow-x: auto; padding-bottom: 10px; }
-
-        /* СУРЕТ ОРНЫ */
-        .q-image-container { text-align: center; margin-bottom: 20px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; background: #f9f9f9; display: none; }
-        .q-image { max-width: 100%; max-height: 350px; height: auto; border-radius: 5px; }
-
-        /* ВАРИАНТТАР */
-        .options-list { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        .options-list.grid-view { grid-template-columns: 1fr 1fr; }
-
-        .option-label { display: flex; align-items: center; padding: 15px 20px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: 0.2s; background: white; font-size: 1rem; }
-        .option-label > div:nth-child(2) { overflow-x: auto; width: 100%; } /* Формула сыюы үшін */
-        .option-label:hover { background-color: #f8f9fa; border-color: #bdc3c7; }
-        .option-label.active { background-color: var(--selected); border-color: var(--selected-border); }
-
-        .marker { width: 25px; height: 25px; border: 2px solid #bdc3c7; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold; color: #7f8c8d; font-size: 0.9rem; }
-        .option-label.multiple .marker { border-radius: 4px; } 
-        .option-label.active .marker { border-color: var(--selected-border); background: var(--selected-border); color: white; }
-
-        /* SIDEBAR (Сұрақтар торы) */
-        .sidebar-nav { width: 320px; background: #fff; border-left: 1px solid #ddd; display: flex; flex-direction: column; z-index: 5; }
-        .nav-title { padding: 15px; background: #ecf0f1; color: var(--primary); font-weight: bold; text-align: center; border-bottom: 1px solid #ddd; }
-        .grid-wrapper { padding: 15px; overflow-y: auto; flex: 1; }
-        
-        /* Скроллбард әдемілеу */
-        .grid-wrapper::-webkit-scrollbar { height: 6px; width: 6px; }
-        .grid-wrapper::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
-
-        .question-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        .q-btn { width: 100%; aspect-ratio: 1; border: 1px solid #bdc3c7; background: white; border-radius: 6px; cursor: pointer; font-weight: bold; color: #7f8c8d; transition: 0.2s; font-size: 1rem; }
-        .q-btn:hover { border-color: var(--primary); }
-        .q-btn.current { border: 2px solid var(--primary); color: var(--primary); }
-        .q-btn.answered { background-color: var(--primary); color: white; border-color: var(--primary); }
-
-        /* CONTROLS (БАТЫРМАЛАР АЙМАҒЫ) */
-        .controls { padding: 15px 25px; background: white; border-top: 1px solid #ddd; display: flex; justify-content: space-between; gap: 10px; align-items: center; z-index: 10; }
-        .nav-btn { padding: 12px 20px; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: 600; flex: 1; transition: 0.2s; }
-        .nav-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
-        .nav-btn:hover:not(:disabled) { background-color: #1a252f; }
-        
-        /* АЯҚТАУ БАТЫРМАСЫ */
-        .finish-btn-main { padding: 12px 20px; background-color: #e74c3c; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 800; cursor: pointer; flex: 1; text-transform: uppercase; transition: 0.2s; }
-        .finish-btn-main:hover { background-color: #c0392b; }
-
-        /* MODAL */
-        #result-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
-        .modal-box { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 100%; max-width: 400px; box-sizing: border-box; }
-        .score-val { font-size: 3.5rem; font-weight: 800; color: var(--primary); margin: 20px 0; }
-        .modal-btn { width: 100%; padding: 15px; margin-bottom: 10px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; color: white; }
-
-        /* =========================================
-           ТЕЛЕФОНҒА АРНАЛҒАН ДИЗАЙН (MOBILE-FRIENDLY)
-           ========================================= */
-        @media (max-width: 768px) {
-            header { padding: 10px 15px; }
-            .logo { font-size: 1rem; }
-            .timer-display { font-size: 1.1rem; padding: 4px 10px; }
-
-            .main-container { flex-direction: column; }
-            
-            /* Сұрақтар лентасы жоғарыға шығады */
-            .sidebar-nav { width: 100%; height: auto; border-left: none; border-bottom: 1px solid #ddd; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-            .nav-title { display: none; } /* Сөзді жасырамыз */
-            .grid-wrapper { padding: 12px 15px; white-space: nowrap; -webkit-overflow-scrolling: touch; display: flex; align-items: center; }
-            .question-grid { display: inline-flex; grid-template-columns: none; gap: 8px; }
-            .q-btn { width: 45px; height: 45px; flex-shrink: 0; font-size: 1rem; }
-
-            .question-area { padding: 20px 15px; }
-            .q-text { font-size: 1.15rem; }
-            
-            /* Варианттар тордан тікелей тізімге айналады */
-            .options-list.grid-view { grid-template-columns: 1fr; }
-            .option-label { padding: 12px 15px; }
-
-            /* Батырмалар: Алдыңғы - АЯҚТАУ - Келесі */
-            .controls { padding: 15px; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
-            .nav-btn { font-size: 0.85rem; padding: 15px 10px; flex: 1; white-space: nowrap; }
-            .finish-btn-main { font-size: 0.85rem; padding: 15px 10px; flex: 1.2; } /* Аяқтау сәл үлкенірек */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0; padding: 0; color: #333;
+            background: linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), 
+                        url('https://img.freepik.com/free-vector/mathematical-formulas-background_23-2148154055.jpg');
+            background-attachment: fixed; background-size: cover;
         }
+
+        /* --- БҮЙІРЛІК МЕНЮ --- */
+        .sidebar {
+            height: 100%; width: 0; position: fixed; z-index: 10005;
+            top: 0; left: 0; background: linear-gradient(135deg, #8e44ad 0%, #3498db 100%);
+            overflow-x: hidden; transition: 0.4s; padding-top: 60px;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+        }
+        .sidebar a {
+            padding: 15px 25px; text-decoration: none; font-size: 1.15rem;
+            color: #ffffff; display: block; transition: 0.3s;
+            border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; white-space: nowrap;
+        }
+        .sidebar a:hover { background: rgba(255,255,255,0.2); padding-left: 35px; border-left: 5px solid var(--cyan); }
+        .sidebar .closebtn { position: absolute; top: 10px; right: 20px; font-size: 36px; margin-left: 50px; background: none; border: none; color: white; cursor: pointer; }
+
+        .openbtn {
+            font-size: 24px; cursor: pointer; background-color: var(--purple); color: white;
+            padding: 12px 20px; border: none; border-radius: 10px; position: fixed; top: 20px; left: 20px;
+            z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.3s;
+        }
+        .openbtn:hover { background-color: var(--dark-purple); transform: scale(1.05); }
+
+        header {
+            background: rgba(255, 255, 255, 0.95); padding: 15px 20px; display: flex; justify-content: flex-end;
+            align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 999;
+        }
+        .logo { font-size: 28px; font-weight: 800; color: var(--purple); letter-spacing: -1px; }
+        .logo span { color: var(--cyan); }
+
+        .container { max-width: 1000px; margin: auto; padding: 40px 20px; }
+
+        h1, h2 { font-family: 'Playfair Display', serif; color: var(--purple); margin-bottom: 25px; }
+        h1 { font-size: 2.5rem; }
+
+        .section-card {
+            background: white; padding: 40px; border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(168, 116, 216, 0.1); margin-bottom: 50px;
+            border-left: 10px solid var(--cyan);
+        }
+        .course-text { font-size: 1.1rem; line-height: 1.8; color: #555; }
+
+        /* ҮЗДІКТЕР КАРТОЧКАЛАРЫ (Сұлтанби мен Шұғыла) */
+        .mentors-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        .mentor-card {
+            flex: 1;
+            min-width: 300px;
+            background: white; padding: 40px; border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            text-align: center; display: flex; flex-direction: column; align-items: center;
+        }
+        
+        /* СУРЕТТЕРДІ БІРДЕЙ ЕТЕТІН КОД */
+        .mentor-photo-wrapper {
+            width: 100%;
+            max-width: 260px;
+            aspect-ratio: 4 / 3; /* Суреттің пішінін бірдей етеді */
+            overflow: hidden;
+            border-radius: 20px;
+            margin: 20px 0;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border: 5px solid;
+            background: #f8f9fa;
+        }
+        .mentor-photo { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; /* Сурет бұзылмайды, артығы кесіледі */
+            object-position: center top; /* Фокус жүзде болады */
+            display: block;
+        }
+
+        /* ACTION CARDS */
+        .action-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 50px; }
+        .action-card {
+            background: white; padding: 30px; border-radius: 25px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-bottom: 5px solid transparent;
+            transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .action-card:hover { transform: translateY(-8px); }
+        .btn { display: inline-block; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: 800; margin-top: 15px; transition: 0.3s; width: 80%; margin-left: auto; margin-right: auto; }
+        .btn-video { background: var(--cyan); color: white; }
+        .btn-test { background: var(--purple); color: white; }
+        .btn-formula { background: var(--orange); color: white; }
+
+        /* MOCK TEST BUTTON SECTION */
+        .mock-test-section {
+            text-align: center; margin-bottom: 50px; position: relative;
+        }
+        .mock-banner {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white; padding: 40px; border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(44, 62, 80, 0.2); overflow: hidden; position: relative;
+        }
+        .mock-btn {
+            display: inline-block; padding: 15px 40px; background: var(--gold); color: var(--dark);
+            text-decoration: none; font-weight: 800; border-radius: 50px; font-size: 1.1rem;
+            transition: 0.3s; box-shadow: 0 5px 15px rgba(241, 196, 15, 0.3); margin-top: 20px;
+        }
+        .mock-btn:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(241, 196, 15, 0.5); }
+
+        /* --- ҮЗДІКТЕР ТАҚТАСЫ (LEADERBOARD) --- */
+        .leaderboard-section {
+            background: white; padding: 40px; border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); margin-bottom: 50px; text-align: center;
+            border-top: 8px solid var(--gold);
+        }
+        .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .leaderboard-table th { background: var(--purple); color: white; padding: 15px; }
+        .leaderboard-table td { padding: 15px; border-bottom: 1px solid #eee; font-weight: 600; color: #333; }
+        
+        .rank-1 { background: linear-gradient(90deg, #FFF8DC 0%, #fff 100%); border-left: 5px solid #FFD700; }
+        .rank-2 { background: linear-gradient(90deg, #F5F5F5 0%, #fff 100%); border-left: 5px solid #C0C0C0; }
+        .rank-3 { background: linear-gradient(90deg, #FFF0E0 0%, #fff 100%); border-left: 5px solid #CD7F32; }
+        .rank-icon { margin-right: 5px; font-size: 1.2rem; }
+
+        /* TIMER */
+        .timer-section {
+            background: var(--dark); color: white; padding: 40px 20px; border-radius: 30px;
+            text-align: center; margin-top: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .timer-display { display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
+        .timer-box {
+            background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px;
+            min-width: 70px; border: 1px solid rgba(60, 211, 211, 0.3);
+        }
+        .timer-box span { font-size: 2rem; font-weight: 800; color: var(--cyan); display: block; }
+
+        /* POPUP */
+        #popup {
+            position: fixed; bottom: 20px; right: 20px; background: white; border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 15px; width: 300px; z-index: 9999;
+            display: none; border-left: 5px solid var(--purple); animation: slideUp 0.6s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .popup-content { display: flex; align-items: center; gap: 12px; }
+        .author-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .quote-text { font-size: 0.8rem; font-style: italic; margin: 0; }
+        .author-name { font-size: 0.7rem; font-weight: 700; color: var(--purple); margin-top: 4px; display: block; }
+        .popup-close { position: absolute; top: 5px; right: 10px; cursor: pointer; color: #999; }
+
+        @media screen and (max-width: 768px) { h1 { font-size: 2rem; } .timer-box span { font-size: 1.6rem; } #popup { width: 85%; left: 7.5%; bottom: 10px; } }
     </style>
 </head>
 <body>
 
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+        <a href="index.html">🏠 Басты бет</a>
+        <a href="ubt_mock_math.html">🎓 Пробный Тест</a>
+        <a href="tests.html">📝 Тесттер (Таңдау)</a> 
+        <a href="quiz.html">📐 Формулалар</a>
+        <a href="vidio.html">🎥 Видео Сабақтар</a>
+    </div>
+
+    <button id="mainMenuBtn" class="openbtn" onclick="openNav()">☰</button>
+
 <header>
-    <div class="logo">Easy<span>Math</span> | Нұсқа 1</div>
-    <div class="timer-display" id="timer">01:30:00</div>
+    <div class="logo">Easy<span>Math</span></div>
 </header>
 
-<div class="main-container">
-    <div class="sidebar-nav">
-        <div class="nav-title">Математика (Сұрақтар)</div>
-        <div class="grid-wrapper">
-            <div class="question-grid" id="q-grid"></div>
+<div class="container">
+    <section class="section-card">
+        <h1>EasyMath — ҰБТ-ға дайындық</h1>
+        <div class="course-text">
+            Математика — ғаламның сырын ашатын ғажайып тіл. Біздің платформа арқылы сен күрделі есептердің ең қарапайым шешімдерін тауып, өз арманыңдағы университетке грантқа түсуге толық мүмкіндік аласың! <br><br>
+            <strong>Біздің платформаның артықшылықтары:</strong><br>
+            • Жүйелі әрі түсінікті дайындық бағдарламасы.<br>
+            • Әр түрлі деңгейдегі (Бастауыштан Профиге дейін) интерактивті тесттер.<br>
+            • Ең қиын тақырыптардың оңайлатылған видео түсіндірмелері.<br>
+            • Нақты ҰБТ форматындағы сынақтар (Mock Test).
+        </div>
+    </section>
+
+    <div class="mentors-container">
+        <div class="mentor-card" style="border-right: 10px solid var(--purple);">
+            <div style="background: var(--purple); color: white; padding: 8px 20px; border-radius: 50px; font-weight: 700; margin-bottom: 15px;">ҰБТ ҮЗДІГІ</div>
+            <h2>Жаңабай Сұлтанби</h2>
+            <div class="mentor-photo-wrapper" style="border-color: var(--cyan);">
+                <img src="sultanbi.jpg" alt="Жаңабай Сұлтанби" class="mentor-photo">
+            </div>
+            <div class="course-text">"Математикадан қорықпа, онымен дос бол. Күн сайын дайындалсаң, нәтиже міндетті түрде болады!"</div>
+        </div>
+
+        <div class="mentor-card" style="border-right: 10px solid var(--cyan);">
+            <div style="background: var(--cyan); color: white; padding: 8px 20px; border-radius: 50px; font-weight: 700; margin-bottom: 15px;">МАТЕМАТИКА РЕКОРДСМЕНІ</div>
+            <h2>Ержігіт Шұғыла</h2>
+            <div class="mentor-photo-wrapper" style="border-color: var(--purple);">
+                <img src="shugyla.jpg" alt="Ержігіт Шұғыла" class="mentor-photo">
+            </div>
+            <div class="course-text">"Математика — тек сандар емес, ол сенің мақсатыңа жеткізетін ең сенімді жол. Өз күшіңе сен және биіктерді бағындыр!"</div>
         </div>
     </div>
 
-    <div class="question-area">
-        <div class="q-header">Сұрақ <span id="q-num">1</span> / <span id="q-total"></span></div>
-        
-        <div class="q-image-container" id="q-img-box">
-            <img src="" id="q-img" class="q-image" alt="Сұрақ суреті">
+    <div class="action-section">
+        <div class="action-card" style="border-bottom-color: var(--cyan);">
+            <h3>Видео сабақтар</h3>
+            <p style="font-size: 0.9rem; color: #666;">Ең қиын тақырыптардың түсіндірмесі</p>
+            <a href="vidio.html" class="btn btn-video">Көру</a>
         </div>
-
-        <div id="q-content"></div>
+        <div class="action-card" style="border-bottom-color: var(--purple);">
+            <h3>Онлайн Тесттер</h3>
+            <p style="font-size: 0.9rem; color: #666;">Деңгейіңді таңдап, біліміңді сына</p>
+            <a href="tests.html" class="btn btn-test">Тестті бастау</a>
+        </div>
+        <div class="action-card" style="border-bottom-color: var(--orange);">
+            <h3>Формула Жаттау</h3>
+            <p style="font-size: 0.9rem; color: #666;">50 сұрақ арқылы формулаларды тексер</p>
+            <a href="quiz.html" class="btn btn-formula">Формула</a>
+        </div>
     </div>
+
+    <div class="mock-test-section">
+        <div class="mock-banner">
+            <h2 style="color: var(--gold); margin-bottom: 10px;">ПРОБНОЕ ЕНТ (MOCK TEST)</h2>
+            <p style="color: #bdc3c7;">Шынайы емтихан атмосферасы. Уақытқа. Нәтиже базаға енеді.</p>
+            <a href="ubt_mock_math.html" class="mock-btn">Сынақты Бастау</a>
+        </div>
+    </div>
+
+    <section class="leaderboard-section">
+        <h2 style="color: #2c3e50;">🏆 EasyMath Үздіктері</h2>
+        <p style="color: #777; margin-bottom: 20px;">Тізім тест тапсырған оқушылар нәтижесі бойынша автоматты түрде жаңарады.</p>
+        
+        <table class="leaderboard-table" id="rank-table">
+            <thead>
+                <tr>
+                    <th style="border-radius: 10px 0 0 0;">#</th>
+                    <th>Оқушының аты-жөні</th>
+                    <th style="border-radius: 0 10px 0 0;">Балл</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+                <tr><td colspan="3">Жүктелуде...</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="timer-section">
+        <h2>ҰБТ-ға дейін қалды:</h2>
+        <div class="timer-display" id="timer">
+            <div class="timer-box"><span id="days">00</span>күн</div>
+            <div class="timer-box"><span id="hours">00</span>сағат</div>
+            <div class="timer-box"><span id="minutes">00</span>минут</div>
+            <div class="timer-box"><span id="seconds">00</span>сек</div>
+        </div>
+    </section>
 </div>
 
-<div class="controls">
-    <button class="nav-btn" id="btn-prev" onclick="prevQuestion()">❮ Алдыңғы</button>
-    <button class="finish-btn-main" onclick="finishTest()">Аяқтау 🏁</button>
-    <button class="nav-btn" id="btn-next" onclick="nextQuestion()">Келесі ❯</button>
-</div>
-
-<div id="result-modal">
-    <div class="modal-box">
-        <h2 style="margin-top: 0; color: #2c3e50;">Тест аяқталды!</h2>
-        <p style="color: #7f8c8d;">Сіздің нәтижеңіз:</p>
-        <div class="score-val" id="final-score">0</div>
-        
-        <button class="modal-btn" style="background-color: #3498db;" onclick="sendToTelegram()">🚀 Нәтижені жіберу</button>
-        <button class="modal-btn" style="background-color: #95a5a6;" onclick="location.reload()">Қайта тапсыру</button>
-        
-        <br><br>
-        <a href="index.html" style="color: #34495e; text-decoration: none; font-weight: bold;">← Басты бетке қайту</a>
+<div id="popup">
+    <span class="popup-close" onclick="closePopup()">×</span>
+    <div class="popup-content">
+        <img id="author-icon" src="" class="author-img">
+        <div class="quote-box">
+            <p id="quote-text" class="quote-text"></p>
+            <span id="author-name" class="author-name"></span>
+        </div>
     </div>
 </div>
 
 <script>
-    // --- АҚЫЛЫ НҰСҚА 1 (ТАЛДАНҒАН) - НАҚТЫ СҰРАҚТАР ---
-    const quizData = [
-        { q: "Өрнекті ықшамдаңыз: \\( \\sqrt{(3+\\sqrt{3})^2} + \\sqrt{(\\sqrt{3}-2)^2} \\)", opts: ["4", "5", "3", "\\sqrt{3}"], correct: [1], type: "single" },
-        { q: "Амалдарды орындаңыз: \\( |||-2|-3|-4| \\)", opts: ["3", "5", "9", "7"], correct: [1], type: "single" },
-        { q: "Өрнекті ықшамдаңыз: \\( \\frac{1}{1+ctg^2 2\\alpha} + \\frac{1}{1+tg^2 2\\alpha} \\)", opts: ["\\sin 2\\alpha", "\\cos 2\\alpha", "2", "1"], correct: [3], type: "single" },
-        { q: "Өрнекті ықшамдаңыз: \\( \\frac{6x^2}{x-2} - 6x \\)", opts: ["\\frac{-12x}{x-2}", "\\frac{12x}{x-2}", "-\\frac{12x}{x+2}", "\\frac{12x^2+12x}{x-2}"], correct: [1], type: "single" },
-        { q: "Теңдеуді шешіп, түбірлерінің көбейтіндісін табыңыз: \\( |x^2 - 3x| = 4 \\)", opts: ["-4", "2", "3", "-3"], correct: [0], type: "single" },
-        { q: "Екі санның қосындысы 57-ге тең. Бірінші сан екінші саннан 7-ге артық. Осы сандарды табыңыз.", opts: ["36 және 21", "25 және 36", "32 және 25", "33 және 24"], correct: [2], type: "single" },
-        { q: "Функцияның туындысын табыңыз: \\( f(x) = -7\\sin x + 2tg x \\)", opts: ["\\( f'(x) = 7\\cos x + \\frac{2}{\\cos^2 x} \\)", "\\( f'(x) = -7\\cos x + \\frac{1}{\\cos^2 x} \\)", "\\( f'(x) = -7\\cos x + \\frac{2}{\\cos^2 x} \\)", "\\( f'(x) = -7\\cos x + \\frac{2}{\\sin^2 x} \\)"], correct: [2], type: "single" },
-        { q: "Үшбұрышты призманың биіктігі 12 см, ал табан қабырғалары 15 см, 14 см, 13 см. Призманың көлемін табыңыз.", opts: ["1014 см³", "1012 см³", "1010 см³", "1008 см³"], correct: [3], type: "single" },
-        { q: "Теңсіздіктер жүйесін шешіңіз: \\( \\begin{cases} x^2 - 25 < 0 \\\\ 36 - x^2 \\ge 0 \\end{cases} \\)", opts: ["(-6; 6)", "(-5; 5)", "[-6; 6]", "[-5; 5]"], correct: [1], type: "single" },
-        { q: "Теңдеуді шешіңіз: \\( \\sqrt{x^4 + 19} = 10 \\)", opts: ["-3; 3", "-6; 6", "-5; 5", "-4; 4"], correct: [0], type: "single" },
-        { q: "\\( y = 5x - x^2 \\) функциясының графигі және \\( x=1, x=4, y=0 \\) түзулерімен шектелген фигураның ауданын табыңыз.", opts: ["16,5 кв. бірл", "18,5 кв. бірл", "17,8 кв. бірл", "13,2 кв. бірл"], correct: [0], type: "single" },
-        { q: "\\( \\cos x > -\\frac{1}{2} \\) теңсіздігінің шешімі:", opts: ["\\( (-\\frac{\\pi}{3} + \\pi n; \\frac{\\pi}{3} + \\pi n), n \\in Z \\)", "\\( (-\\frac{\\pi}{6} + \\pi n; \\frac{5\\pi}{6} + \\pi n), n \\in Z \\)", "\\( (\\frac{\\pi}{6} + 2\\pi n; \\frac{5\\pi}{6} + 2\\pi n), n \\in Z \\)", "\\( (-\\frac{2\\pi}{3} + 2\\pi n; \\frac{2\\pi}{3} + 2\\pi n), n \\in Z \\)"], correct: [3], type: "single" },
-        { q: "Координаталық сәуледе \\( A(-3) \\) және \\( B(6) \\) нүктелері берілген. \\( AB \\) кесіндісінің ұзындығын табыңыз.", opts: ["3", "6", "9", "10"], correct: [2], type: "single" },
-        { q: "Функцияның туындысын табыңыз: \\( f(x) = x^2 + \\cos 4x \\)", opts: ["\\( f'(x) = 2x - 4\\cos 4x \\)", "\\( f'(x) = 2x - \\cos 4x \\)", "\\( f'(x) = 2x - 4\\sin 4x \\)", "\\( f'(x) = 2x + 4\\sin 4x \\)"], correct: [2], type: "single" },
-        { q: "Қыры 6 см болатын октаэдрдің бетінің ауданын табыңыз", opts: ["\\( 72 \\text{ см}^2 \\)", "\\( 72\\sqrt{3} \\text{ см}^2 \\)", "\\( 72\\sqrt{2} \\text{ см}^2 \\)", "\\( 72\\sqrt{6} \\text{ см}^2 \\)"], correct: [1], type: "single" },
-        { q: "Теңдеуді шешіңіз: \\( \\sqrt[4]{7} \\cdot (\\frac{1}{7})^{4x-5} = \\frac{1}{7^{2x+3}} \\)", opts: ["4,25", "4,125", "-2,5", "-8,25"], correct: [0], type: "single" },
-        { q: "Теңдеулер жүйесін шешіңіз: \\( \\begin{cases} x+y = \\frac{\\pi}{2} \\\\ \\sin 2x + \\cos 2y = 1 \\end{cases} \\)", opts: ["1-жауап", "2-жауап", "\\( (\\frac{\\pi}{2} - \\pi n; \\pi n); (\\frac{\\pi}{4} - \\pi n; \\frac{\\pi}{4} + \\pi n), n \\in Z \\)", "4-жауап"], correct: [2], type: "single" },
-        { q: "\\( f(x) = 4x^2 - 2 \\) функциясының графигіне абсциссасы \\( x_0 = -1 \\) болатын нүктеде жүргізілген жанаманың теңдеуін жазыңыз", opts: ["y = 8x + 5", "y = -8x + 6", "y = 8x - 5", "y = -8x - 6"], correct: [3], type: "single" },
-        { q: "ABCD теңбүйірлі трапециясына сырттай шеңбер сызылған. \\( \\angle CAD = 60^\\circ, AD = 5, \\angle ABC \\) бұрышы шеңбердің диаметріне тіреледі. Шеңбердің радиусын табыңыз.", opts: ["5", "4", "6", "3"], correct: [0], type: "single" },
-        { q: "\\( 1; -\\frac{1}{2}; \\frac{1}{4}; -\\frac{1}{8}; ... \\) тізбегі берілген. Алғашқы теріс төрт мүшесінің қосындысын табыңыз.", opts: ["-\\frac{17}{16}", "-\\frac{25}{32}", "-\\frac{85}{128}", "-\\frac{13}{64}"], correct: [2], type: "single" },
-        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>Егер алғашқы жеті цифр 2357148 болса, онда тексеруші цифр:", img: "q21.jpg", opts: ["2", "8", "7", "0"], correct: [1], type: "single" },
-        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>10000Y01 штрих-кодының белгісіз Y цифрын табыңыз:", img: "q21.jpg", opts: ["1", "0", "3", "6"], correct: [0], type: "single" },
-        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>173610C7 штрих-кодындағы белгісіз C санын табыңыз:", img: "q21.jpg", opts: ["1", "3", "5", "4"], correct: [2], type: "single" },
-        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>712T5134 штрих-кодының белгісіз T цифрын табыңыз:", img: "q21.jpg", opts: ["3", "5", "2", "6"], correct: [1], type: "single" },
-        { q: "<b>Мәтіндік есеп: Штрих-код</b><br>Штрих-кодта өндірушінің мемлекеті жайлы ақпарат беретін цифрлардың қосындысы 15-ке тең... Екінші орында тұратын цифрдың мүмкін мәндерінің қосындысы:", img: "q21.jpg", opts: ["15", "17", "13", "12"], correct: [2], type: "single" },
-        { q: "\\( \\vec{a}(1; 0; 2) \\) және \\( \\vec{b}(2; 1; 0) \\) векторларының арасындағы бұрышты табыңыз", img: "q26.jpg", opts: ["\\( \\arccos 0,4 \\)", "\\( \\arccos 0,1 \\)", "\\( \\arccos 0,2 \\)", "\\( \\arccos 0,6 \\)"], correct: [0], type: "single" },
-        { q: "\\( x^6 - x^5 - 2x^4 + x^2 - x - 2 \\) көпмүшесінің бүтін түбірлерінің саны", img: "q27.jpg", opts: ["2", "3", "1", "6"], correct: [0], type: "single" },
-        { q: "Теңдеуді шешіңіз: \\( \\log_8(x-2) + \\log_8(x+2) = \\log_8(4x+41) \\)", img: "q28.jpg", opts: ["4", "9; -5", "5; -9", "9"], correct: [3], type: "single" },
-        { q: "Суретте берілген теңсіздіктің шешімі (боялған аймақ):", img: "q29.jpg", opts: ["\\( y < -3x + 7 \\)", "\\( y \\le -3x + 7 \\)", "\\( y > -2x + 8 \\)", "\\( y \\ge -2x + 8 \\)"], correct: [1], type: "single" },
-        { q: "\\( \\int_0^1 (2x-1)^6 dx \\) интегралын есептеңіз", img: "q30.jpg", opts: ["\\frac{1}{7}", "\\frac{1}{6}", "\\frac{2}{7}", "\\frac{3}{7}"], correct: [0], type: "single" },
+    // 1. MENU
+    function openNav() { document.getElementById("mySidebar").style.width = "280px"; document.getElementById("mainMenuBtn").style.display = "none"; }
+    function closeNav() { document.getElementById("mySidebar").style.width = "0"; document.getElementById("mainMenuBtn").style.display = "block"; }
 
-        // --- 31-40 СҰРАҚТАР (КӨП ЖАУАПТЫ) ---
-        { q: "\\( A(m; -n) \\) нүктесі \\( y = x^2 - 3x + 2 \\) параболасының төбесі. Сәйкестендіріңіз:<br>А) m мәні<br>B) n мәні", img: "q31.jpg", opts: ["-0,35", "0,25", "1,5", "2,5", "-1,5", "0,5", "1,25", "-2,5"], correct: [1, 2], type: "multiple" },
-        { q: "Дөңгелекке ұзындығы \\( 10\\sqrt{3} \\) см тіктөртбұрыш іштей сызылған...<br>A) Дөңгелектің диаметрі<br>B) Тіктөртбұрыштың ені", img: "q32.jpg", opts: ["5 см", "10 см", "15 см", "20 см", "25 см", "12 см", "8 см", "18 см"], correct: [1, 3], type: "multiple" },
-        { q: "\\( 0,6xy^2 \\cdot (5xy^6)^2 \\) өрнегін стандарт түрге келтіріңіз:<br>A) Бірмүшенің дәрежесі<br>B) Коэффициенті", img: "q33.jpg", opts: ["14", "15", "16", "17", "18", "12", "13", "10"], correct: [1, 3], type: "multiple" },
-        { q: "\\( x_1 \\) мен \\( x_2 \\) мына теңдеудің \\( x^2 - 2x - 2 = 0 \\) түбірлері:<br>A) \\( x_1^2 + x_2^2 \\)<br>B) \\( x_1 + x_2 - x_1 \\cdot x_2 \\)", img: "q34.jpg", opts: ["8", "0", "2", "4", "6", "-2", "10", "12"], correct: [0, 3], type: "multiple" },
-        { q: "\\( \\{a_n\\} \\) прогрессиясы үшін \\( S_5 = 60, S_8 = 144, S_n = 312 \\):<br>A) \\( a_1 \\) мәні<br>B) \\( n \\) мәні", img: "q35.jpg", opts: ["4", "7", "10", "12", "8", "6", "14", "16"], correct: [0, 3], type: "multiple" },
-        { q: "\\( 4(2c+3) + 5c \\) өрнегінің \\( c=4 \\) болғандағы мәнінің бөлгіштері:", img: "q36.jpg", opts: ["7", "6", "8", "5", "4", "9", "3", "10"], correct: [2, 4], type: "multiple" },
-        { q: "\\( \\frac{8\\pi}{3} \\)-ге тең бұрышты градус арқылы өрнектеңіз", img: "q37.jpg", opts: ["490", "460", "470", "450", "440", "480", "500", "520"], correct: [5], type: "multiple" },
-        { q: "\\( S_n = 4n^2 + n \\) прогрессиясының бірінші мүшесі мен айырмасы:", img: "q38.jpg", opts: ["5", "1", "8", "9", "2", "4", "3", "6"], correct: [0, 2], type: "multiple" },
-        { q: "Теңдеулер жүйесінің шешімінен \\( \\frac{y_0}{x_0} \\) табыңыз.", img: "q39.jpg", opts: ["3,5", "128", "-128", "-7,5", "64", "-3,5", "7", "2"], correct: [0], type: "multiple" },
-        { q: "Цилиндр қималарының ауданын табыңыз (d=10, h=8)", img: "q40.jpg", opts: ["24", "9\\pi", "64", "100\\pi", "36\\pi", "48", "80", "10\\pi"], correct: [4, 5], type: "multiple" }
+    // 2. TIMER
+    const countDownDate = new Date("Mar 21, 2026 09:00:00").getTime();
+    setInterval(function() {
+        const now = new Date().getTime();
+        const distance = countDownDate - now;
+        document.getElementById("days").innerText = Math.floor(distance / (1000 * 60 * 60 * 24));
+        document.getElementById("hours").innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        document.getElementById("minutes").innerText = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        document.getElementById("seconds").innerText = Math.floor((distance % (1000 * 60)) / 1000);
+    }, 1000);
+
+    // 3. QUOTES
+    const motivationData = [
+        { quote: "Математика — ақыл-ойдың гимнастикасы.", author: "Михаил Ломоносов", img: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" },
+        { quote: "Есеп шығару – қиындықты жеңу өнері.", author: "Дьёрдь Пойа", img: "https://cdn-icons-png.flaticon.com/512/3048/3048122.png" }
     ];
-
-    let userAnswers = new Array(quizData.length).fill(null).map(() => []);
-    let currentQ = 0;
-    let timeLeft = 90 * 60;
-
-    function init() {
-        document.getElementById('q-total').innerText = quizData.length;
-        renderGrid();
-        loadQuestion(0);
-        setInterval(timerTick, 1000);
+    function updateQuote() {
+        const randIdx = Math.floor(Math.random() * motivationData.length);
+        const data = motivationData[randIdx];
+        document.getElementById("quote-text").innerText = `"${data.quote}"`;
+        document.getElementById("author-name").innerText = data.author;
+        document.getElementById("author-icon").src = data.img;
+        document.getElementById("popup").style.display = "block";
     }
+    function closePopup() { document.getElementById("popup").style.display = "none"; }
+    setTimeout(() => { updateQuote(); setInterval(updateQuote, 300000); }, 2000);
 
-    function timerTick() {
-        if(timeLeft <= 0) return;
-        timeLeft--;
-        let h = Math.floor(timeLeft / 3600);
-        let m = Math.floor((timeLeft % 3600) / 60);
-        let s = timeLeft % 60;
-        document.getElementById('timer').innerText = 
-            `${h < 10 ? '0' : ''}${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-    }
+    // 4. LEADERBOARD FETCH (РЕЙТИНГТІ ЖҮКТЕУ)
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbxnxxwU2m-0d64sJ0aIm-2NftWycVTUO7bNdrsmSobcl3m2hhZkMWSr50cwjHbpe-fi_Q/exec";
 
-    function renderGrid() {
-        const grid = document.getElementById('q-grid');
-        grid.innerHTML = '';
-        quizData.forEach((_, idx) => {
-            let btn = document.createElement('button');
-            btn.className = 'q-btn';
-            btn.innerText = idx + 1;
-            btn.onclick = () => loadQuestion(idx);
-            btn.id = `q-btn-${idx}`;
-            grid.appendChild(btn);
-        });
-    }
-
-    function loadQuestion(idx) {
-        currentQ = idx;
-        document.getElementById('q-num').innerText = idx + 1;
+    fetch(scriptUrl + "?action=read")
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        const tbody = document.getElementById("leaderboard-body");
+        tbody.innerHTML = ""; 
         
-        document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('current'));
-        let activeBtn = document.getElementById(`q-btn-${idx}`);
-        activeBtn.classList.add('current');
-        
-        // Мобильді нұсқада лентаны активті сұраққа қарай жылжыту
-        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-
-        const qData = quizData[idx];
-        let contentHtml = `<div class="q-text">${qData.q}</div>`;
-        
-        const imgContainer = document.getElementById('q-img-box');
-        const imgElement = document.getElementById('q-img');
-
-        if (qData.img) {
-            imgContainer.style.display = "block";
-            imgElement.src = qData.img;
-            imgElement.onerror = function() { this.style.display = 'none'; };
-            imgElement.onload = function() { this.style.display = 'inline-block'; };
-        } else {
-            imgContainer.style.display = "none";
+        if (!data || data.length === 0) {
+             tbody.innerHTML = "<tr><td colspan='3'>Әзірге нәтижелер жоқ</td></tr>";
+             return;
         }
 
-        const gridClass = qData.opts.length > 5 ? 'grid-view' : '';
-        contentHtml += `<div class="options-list ${gridClass}">`;
-        
-        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-
-        qData.opts.forEach((opt, i) => {
-            const isSelected = userAnswers[idx].includes(i);
-            const activeClass = isSelected ? 'active' : '';
-            const typeClass = qData.type === 'multiple' ? 'multiple' : '';
-            const letter = letters[i] || '';
+        data.forEach((student, index) => {
+            let rankClass = "";
+            let icon = index + 1;
             
-            contentHtml += `
-                <div class="option-label ${activeClass} ${typeClass}" onclick="toggleOption(${i}, '${qData.type}')">
-                    <div class="marker">${letter}</div>
-                    <div>\\(${opt}\\)</div>
-                </div>
+            if(index === 0) { rankClass = "rank-1"; icon = "🥇 1"; }
+            else if(index === 1) { rankClass = "rank-2"; icon = "🥈 2"; }
+            else if(index === 2) { rankClass = "rank-3"; icon = "🥉 3"; }
+
+            let row = `
+                <tr class="${rankClass}">
+                    <td><span class="rank-icon">${icon}</span></td>
+                    <td>${student.name}</td>
+                    <td style="font-weight:bold; color:#2c3e50;">${student.scoreStr}</td>
+                </tr>
             `;
+            tbody.innerHTML += row;
         });
-        contentHtml += `</div>`;
-
-        document.getElementById('q-content').innerHTML = contentHtml;
-        
-        // MathJax формулаларын жаңарту
-        if (window.MathJax) { MathJax.typesetPromise(); }
-
-        document.getElementById('btn-prev').disabled = (idx === 0);
-        document.getElementById('btn-next').disabled = (idx === quizData.length - 1);
-    }
-
-    function toggleOption(optIdx, type) {
-        if (type === 'single') {
-            userAnswers[currentQ] = [optIdx];
-        } else {
-            const index = userAnswers[currentQ].indexOf(optIdx);
-            if (index > -1) {
-                userAnswers[currentQ].splice(index, 1);
-            } else {
-                userAnswers[currentQ].push(optIdx);
-            }
-        }
-        
-        const opts = document.querySelectorAll('.option-label');
-        opts.forEach((el, i) => {
-            if (userAnswers[currentQ].includes(i)) {
-                el.classList.add('active');
-                el.querySelector('.marker').style.borderColor = '#3498db';
-                el.querySelector('.marker').style.background = '#3498db';
-                el.querySelector('.marker').style.color = 'white';
-            } else {
-                el.classList.remove('active');
-                el.querySelector('.marker').style.borderColor = '#bdc3c7';
-                el.querySelector('.marker').style.background = 'transparent';
-                el.querySelector('.marker').style.color = '#7f8c8d';
-            }
-        });
-
-        const gridBtn = document.getElementById(`q-btn-${currentQ}`);
-        if (userAnswers[currentQ].length > 0) {
-            gridBtn.classList.add('answered');
-        } else {
-            gridBtn.classList.remove('answered');
-        }
-    }
-
-    function nextQuestion() { if (currentQ < quizData.length - 1) loadQuestion(currentQ + 1); }
-    function prevQuestion() { if (currentQ > 0) loadQuestion(currentQ - 1); }
-
-    function finishTest() {
-        let score = 0;
-        quizData.forEach((q, i) => {
-            const userAns = userAnswers[i].sort().join(',');
-       
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById("leaderboard-body").innerHTML = "<tr><td colspan='3'>Деректерді алу мүмкін болмады. Сілтемені немесе интернетті тексеріңіз.</td></tr>";
+    });
+</script>
+</body>
+</html>
