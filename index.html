@@ -15,6 +15,7 @@
             --white: #ffffff;
             --orange: #ff9f43;
             --gold: #f1c40f;
+            --game: #e74c3c; /* Ойын батырмасының түсі */
         }
 
         body {
@@ -85,7 +86,7 @@
         .mentor-photo-wrapper {
             width: 100%;
             max-width: 260px;
-            aspect-ratio: 4 / 3; /* Суреттің пішінін бірдей етеді */
+            aspect-ratio: 4 / 3; 
             overflow: hidden;
             border-radius: 20px;
             margin: 20px 0;
@@ -96,23 +97,26 @@
         .mentor-photo { 
             width: 100%; 
             height: 100%; 
-            object-fit: cover; /* Сурет бұзылмайды, артығы кесіледі */
-            object-position: center top; /* Фокус жүзде болады */
+            object-fit: cover; 
+            object-position: center top; 
             display: block;
         }
 
-        /* ACTION CARDS */
-        .action-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 50px; }
+        /* ACTION CARDS (4 БАТЫРМА) */
+        .action-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; margin-bottom: 50px; }
         .action-card {
-            background: white; padding: 30px; border-radius: 25px; text-align: center;
+            background: white; padding: 25px; border-radius: 20px; text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-bottom: 5px solid transparent;
             transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between;
         }
-        .action-card:hover { transform: translateY(-8px); }
-        .btn { display: inline-block; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: 800; margin-top: 15px; transition: 0.3s; width: 80%; margin-left: auto; margin-right: auto; }
+        .action-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .btn { display: inline-block; padding: 12px 25px; border-radius: 50px; text-decoration: none; font-weight: 800; margin-top: 15px; transition: 0.3s; width: 80%; margin-left: auto; margin-right: auto; }
         .btn-video { background: var(--cyan); color: white; }
         .btn-test { background: var(--purple); color: white; }
         .btn-formula { background: var(--orange); color: white; }
+        .btn-game { background: var(--game); color: white; animation: pulse 2s infinite; } /* Ойынға анимация қосылды */
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         /* MOCK TEST BUTTON SECTION */
         .mock-test-section {
@@ -182,7 +186,7 @@
         <a href="tests.html">📝 Тесттер (Таңдау)</a> 
         <a href="quiz.html">📐 Формулалар</a>
         <a href="vidio.html">🎥 Видео Сабақтар</a>
-    </div>
+        <a href="game.html">🎮 Мини-Ойын (Жарыс)</a> </div>
 
     <button id="mainMenuBtn" class="openbtn" onclick="openNav()">☰</button>
 
@@ -226,18 +230,23 @@
     <div class="action-section">
         <div class="action-card" style="border-bottom-color: var(--cyan);">
             <h3>Видео сабақтар</h3>
-            <p style="font-size: 0.9rem; color: #666;">Ең қиын тақырыптардың түсіндірмесі</p>
+            <p style="font-size: 0.85rem; color: #666;">Ең қиын тақырыптардың түсіндірмесі</p>
             <a href="vidio.html" class="btn btn-video">Көру</a>
         </div>
         <div class="action-card" style="border-bottom-color: var(--purple);">
             <h3>Онлайн Тесттер</h3>
-            <p style="font-size: 0.9rem; color: #666;">Деңгейіңді таңдап, біліміңді сына</p>
-            <a href="tests.html" class="btn btn-test">Тестті бастау</a>
+            <p style="font-size: 0.85rem; color: #666;">Деңгейіңді таңдап, біліміңді сына</p>
+            <a href="tests.html" class="btn btn-test">Бастау</a>
         </div>
         <div class="action-card" style="border-bottom-color: var(--orange);">
             <h3>Формула Жаттау</h3>
-            <p style="font-size: 0.9rem; color: #666;">50 сұрақ арқылы формулаларды тексер</p>
-            <a href="quiz.html" class="btn btn-formula">Формула</a>
+            <p style="font-size: 0.85rem; color: #666;">50 сұрақ арқылы формулаларды тексер</p>
+            <a href="quiz.html" class="btn btn-formula">Жаттау</a>
+        </div>
+        <div class="action-card" style="border-bottom-color: var(--game); background: #fdf5f4;">
+            <h3>Онлайн Жарыс 🔥</h3>
+            <p style="font-size: 0.85rem; color: #666;">Басқа оқушылармен нақты уақытта жарыс!</p>
+            <a href="game.html" class="btn btn-game">Ойнау</a>
         </div>
     </div>
 
