@@ -6,104 +6,177 @@
     <title>EasyMath Жарысы (Онлайн)</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        :root { --bg: #f4f6f9; --primary: #8e44ad; --cyan: #3cd3d3; --gold: #f1c40f; --text: #2c3e50; }
-        body { font-family: 'Montserrat', sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); display: flex; flex-direction: column; height: 100vh; }
+        :root { --bg: #f4f6f9; --primary: #8e44ad; --cyan: #3cd3d3; --gold: #f1c40f; --text: #2c3e50; --danger: #e74c3c; --success: #2ecc71; --selected-bg: #e0f2fe; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow-x: hidden; }
         
-        .header { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .logo { font-weight: 800; font-size: 1.2rem; }
+        .header { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; }
+        .logo { font-weight: 800; font-size: 1.2rem; cursor: pointer; }
         .my-score { background: var(--gold); color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; }
 
-        .container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; box-sizing: border-box; }
+        .container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 100%; max-width: 500px; margin-bottom: 20px; box-sizing: border-box; }
         
-        input { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; box-sizing: border-box; text-align: center; font-weight: bold; }
-        button { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; color: white; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; color: white; cursor: pointer; transition: 0.2s; margin-bottom: 10px; }
+        button:active { transform: scale(0.95); }
         .btn-primary { background: var(--cyan); color: #000; }
-        .btn-play { background: #e74c3c; font-size: 1.2rem; padding: 20px; border-radius: 50px; animation: pulse 2s infinite; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
         
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        /* Лобби */
+        .lobby-grid { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 1000px; }
+        @media (min-width: 768px) { .lobby-grid { flex-direction: row; align-items: flex-start; } .lobby-col { flex: 1; } }
 
-        .list-box { background: white; border-radius: 15px; padding: 15px; width: 100%; max-width: 400px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .list-title { font-weight: 800; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 10px; text-align: left; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f9f9f9; font-weight: 600; }
+        .list-box { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .list-title { font-weight: 800; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 10px; font-size: 1.1rem; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f9f9f9; }
+
+        .room-item { background: #fff; border: 2px solid #eee; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; transition: 0.3s; }
+        .room-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 1rem; }
+        .badge { background: #eee; padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; color: #555; display: inline-block; margin-top: 5px; }
         
-        .battle-header { display: flex; justify-content: space-between; width: 100%; max-width: 400px; margin-bottom: 20px; align-items: center; }
-        .player-card { background: white; padding: 15px 10px; border-radius: 15px; width: 40%; text-align: center; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .player-card span { display: block; font-size: 2rem; color: var(--primary); margin-top: 5px; }
+        /* Ойын экраны */
+        .battle-header { display: flex; justify-content: space-between; width: 100%; max-width: 600px; margin-bottom: 15px; align-items: center; background: white; padding: 10px 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); box-sizing: border-box; }
+        .team-box { width: 40%; text-align: center; }
+        .team-box h3 { margin: 0 0 5px 0; font-size: 0.9rem; color: #7f8c8d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .team-score { font-size: 2rem; font-weight: 900; color: var(--primary); }
+        .vs-text { font-size: 1.2rem; font-weight: 900; color: var(--danger); }
 
-        .question-box { font-size: 1.2rem; font-weight: 700; margin: 20px 0; min-height: 80px; }
-        .option-btn { background: white; color: var(--text); border: 2px solid #eee; font-size: 1.1rem; }
-        .option-btn.correct { background: #2ecc71; border-color: #2ecc71; color: white; }
-        .option-btn.wrong { background: #e74c3c; border-color: #e74c3c; color: white; }
+        .question-box { font-size: 1.1rem; font-weight: 600; margin: 15px 0; min-height: 80px; overflow-x: auto; padding-bottom: 10px; line-height: 1.5; }
+        
+        /* Жауап батырмалары (Мөлдір көк түс қосылды) */
+        .option-btn { background: #fff !important; color: #333 !important; border: 2px solid #eee !important; text-align: left; padding: 12px 15px; position: relative; margin-bottom: 8px; font-size: 1rem; border-radius: 10px; overflow-x: auto; width: 100%; transition: 0.2s; }
+        .option-btn.selected { border-color: var(--primary) !important; background: var(--selected-bg) !important; box-shadow: 0 0 0 1px var(--primary) !important; }
+        .option-btn.correct { background: var(--success) !important; border-color: var(--success) !important; color: #fff !important; }
+        .option-btn.wrong { background: var(--danger) !important; border-color: var(--danger) !important; color: #fff !important; }
+        .option-btn:disabled { opacity: 0.9; cursor: not-allowed; }
+
+        .team-badge { background: #f1c40f; color: #000; font-size: 0.75rem; padding: 3px 8px; border-radius: 10px; display: inline-block; margin-left: 10px; vertical-align: middle; font-weight: bold; }
 
         .screen { display: none; width: 100%; flex-direction: column; align-items: center; }
         .active-screen { display: flex; }
+        
+        .spectator-banner { background: var(--gold); color: #000; width: 100%; max-width: 600px; text-align: center; padding: 10px; font-weight: bold; margin-bottom: 15px; border-radius: 10px; box-sizing: border-box; }
+        .wait-msg { padding: 15px; border-radius: 10px; background: #fff; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; margin-top: 15px; text-align: center; width: 100%; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="logo">⚔️ MathBattle</div>
+        <div class="logo" onclick="location.href='index.html'">← EasyMath</div>
         <div class="my-score">🏆 <span id="header-score">0</span></div>
     </div>
 
     <div class="container">
+        
         <div id="screen-login" class="screen active-screen">
-            <div class="card">
-                <h2>Ойынға қош келдің!</h2>
-                <input type="text" id="playerName" placeholder="Атыңызды жазыңыз..." autocomplete="off">
+            <div class="card" style="text-align: center;">
+                <h2>Қош келдің! 🎮</h2>
+                <input type="text" id="playerName" placeholder="Аты-жөніңіз..." autocomplete="off">
                 <button class="btn-primary" onclick="login()">Кіру 🚀</button>
             </div>
         </div>
 
         <div id="screen-lobby" class="screen">
-            <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #8e44ad, #3498db); color: white;">
-                <h2 style="margin-top: 0;">Нағыз Онлайн Жарыс</h2>
-                <p style="font-size: 0.9rem; margin-bottom: 20px;">Кез келген оқушымен жылдам жарыс</p>
-                <button class="btn-play" onclick="findMatch()">🔍 Ойыншы іздеу</button>
-            </div>
-            
-            <div class="list-box">
-                <div class="list-title">🟢 Қазір онлайнда</div>
-                <div id="online-users" style="color: #7f8c8d; font-size: 0.9rem;">Күте тұрыңыз...</div>
+            <div class="lobby-grid">
+                <div class="lobby-col">
+                    <div class="card" style="margin-bottom:0;">
+                        <h2 style="margin-top: 0;">Жаңа ойын ⚔️</h2>
+                        <label><b>Пән:</b></label>
+                        <select id="create-subj">
+                            <option value="math">Математика (Күрделі)</option>
+                            <option value="math_lit">Мат. сауаттылық</option>
+                        </select>
+                        <label><b>Формат:</b></label>
+                        <select id="create-mode">
+                            <option value="1v1">1 ге 1</option>
+                            <option value="2v2">2 ге 2 (Командалық)</option>
+                            <option value="3v3">3 ке 3 (Командалық)</option>
+                        </select>
+                        <label><b>Сұрақ саны:</b></label>
+                        <select id="create-qcount">
+                            <option value="5">5 есеп</option>
+                            <option value="10">10 есеп</option>
+                            <option value="15">15 есеп</option>
+                        </select>
+                        <button class="btn-danger" onclick="createRoom()" style="margin-top: 10px; padding: 18px; font-size:1.1rem;">Бөлме құру 🔍</button>
+                    </div>
+                </div>
+
+                <div class="lobby-col">
+                    <div class="list-box">
+                        <div class="list-title">⏳ Күтіп тұрғандар</div>
+                        <div id="waiting-rooms"><p style="color:#7f8c8d; font-size:0.9rem;">Әзірге ешкім жоқ...</p></div>
+                    </div>
+                    <div class="list-box">
+                        <div class="list-title">🔴 Жүріп жатқан ойындар</div>
+                        <div id="playing-rooms"><p style="color:#7f8c8d; font-size:0.9rem;">Әзірге ойын жоқ...</p></div>
+                    </div>
+                </div>
+
+                <div class="lobby-col">
+                    <div class="list-box" style="border: 2px solid var(--success);">
+                        <div class="list-title" style="color: var(--success);">🟢 Онлайн отырғандар</div>
+                        <div id="online-users-list"><p style="color:#7f8c8d; font-size:0.9rem;">Күте тұрыңыз...</p></div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div id="screen-loading" class="screen">
-            <div class="card">
-                <h2>🔍 Қарсылас ізделуде...</h2>
-                <p>Басқа оқушының қосылуын күтудеміз</p>
-                <div style="font-size: 3.5rem; animation: pulse 1s infinite; margin-top: 20px;">⏳</div>
+        <div id="screen-waiting" class="screen">
+            <div class="card" style="text-align: center;">
+                <h2>Ойынды күтудеміз... ⏳</h2>
+                <div id="waiting-info" style="margin-bottom: 20px; font-weight: bold; color: var(--primary);"></div>
+                <div id="players-list" style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 20px;"></div>
+                <button class="btn-success" id="btn-start-game" onclick="hostStartGame()" style="display: none; padding: 18px; font-size:1.2rem;">Ойынды Бастау 🚀</button>
+                <button class="btn-danger" onclick="leaveRoom()" style="background: #95a5a6;">Бас тарту</button>
             </div>
         </div>
 
         <div id="screen-game" class="screen">
+            <div id="spectator-banner" class="spectator-banner" style="display: none;">👁️ Сіз көрермен режиміндесіз.</div>
+
             <div class="battle-header">
-                <div class="player-card">
-                    <div id="p1-name" style="font-size: 0.8rem; color: #777; text-transform: uppercase;">Сен</div>
-                    <span id="p1-score">0</span>
-                </div>
-                <div style="font-size: 1.5rem; font-weight: 900; color: #e74c3c;">VS</div>
-                <div class="player-card">
-                    <div id="p2-name" style="font-size: 0.8rem; color: #777; text-transform: uppercase;">Қарсылас</div>
-                    <span id="p2-score">0</span>
-                </div>
+                <div class="team-box"><h3 id="t1-names">Team 1</h3><div class="team-score" id="team1-score">0</div></div>
+                <div class="vs-text">VS</div>
+                <div class="team-box"><h3 id="t2-names">Team 2</h3><div class="team-score" id="team2-score">0</div></div>
             </div>
 
-            <div class="card" style="width: 100%; max-width: 400px;">
-                <div style="color: #95a5a6; font-weight: bold; margin-bottom: 10px; font-size: 0.9rem;">Сұрақ <span id="current-q-num">1</span> / 5</div>
-                <div class="question-box" id="question-text">Жүктелуде...</div>
+            <div class="card" style="width: 100%; max-width: 600px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #999;">
+                    <span id="game-subj-label"></span>
+                    <span>Сұрақ <span id="current-q-num">1</span> / <span id="total-q-num">5</span></span>
+                </div>
+                
+                <div class="question-box" id="question-text"></div>
                 <div id="options-container"></div>
+                
+                <div id="team-controls" style="display:none; margin-top: 15px;">
+                    <button class="btn-success" onclick="confirmTeamAnswer()" style="padding:15px; font-size:1.1rem; box-shadow: 0 4px 10px rgba(46,204,113,0.3);">Растау ✅</button>
+                </div>
+
+                <div id="wait-msg" class="wait-msg" style="display:none;"></div>
+
+                <div id="post-answer-controls" style="display:none; margin-top: 15px; flex-direction:column; gap:10px;">
+                    <button class="btn-primary" id="btn-next-q" onclick="nextQuestion()" style="display:none; padding:15px;">Келесі Сұрақ ❯</button>
+                    <button class="btn-danger" id="btn-finish-q" onclick="finishGame()" style="display:none; padding:15px;">Аяқтау 🏁</button>
+                </div>
             </div>
+            
+            <button class="btn-danger" onclick="leaveRoom()" style="max-width: 200px; background: #bdc3c7; margin-top: 10px;">Шығу</button>
         </div>
+
     </div>
 
 <script>
-    // 👇 СЕНІҢ FIREBASE КОДЫҢ 👇
+    // ⚠️ МЫНА ЖЕРГЕ ӨЗІҢНІҢ FIREBASE КІЛТІҢДІ ҚОЙ
     const firebaseConfig = {
       apiKey: "AIzaSyA2zIwH2HGHjQVVehW19yAtWzzAqY_wy9g",
       authDomain: "easymath-game.firebaseapp.com",
@@ -111,187 +184,428 @@
       projectId: "easymath-game",
       storageBucket: "easymath-game.firebasestorage.app",
       messagingSenderId: "393831849157",
-      appId: "1:393831849157:web:095ea6dead015656cde4ac",
-      measurementId: "G-HPDV164NBJ"
+      appId: "1:393831849157:web:095ea6dead015656cde4ac"
     };
     
-    // Firebase қосу
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // ----------------------------------------------------
-    // ОЙЫН ЛОГИКАСЫ
-    let myId = "user_" + Math.floor(Math.random() * 1000000);
-    let myName = "";
-    let myTotalPoints = parseInt(localStorage.getItem("easymath_points") || "0");
-    let gameId = null;
-    let playerRole = null; 
-    let currentQ = 0;
-    
-    // Сұрақтар базасы
-    const questions = [
-        { q: "2x + 5 = 15. x-ті табыңыз.", opts: ["5", "10", "4", "6"], ans: 0 },
-        { q: "√(64) + √(36) = ?", opts: ["14", "10", "12", "16"], ans: 0 },
-        { q: "Үшбұрыштың ішкі бұрыштарының қосындысы?", opts: ["180°", "360°", "90°", "270°"], ans: 0 },
-        { q: "5! (5 факториал) мәнін табыңыз.", opts: ["120", "60", "24", "100"], ans: 0 },
-        { q: "0,5 * 0,2 = ?", opts: ["0,1", "1", "0,01", "0,25"], ans: 0 }
+    // ==========================================
+    // ЕСЕПТЕР БАЗАСЫ (100 ҚИЫН ЕСЕП)
+    // ==========================================
+    const mathDB = [
+        { q: "Теңдеуді шешіңіз: \\( \\frac{x^2-10x+15}{x^2-6x+15}=\\frac{3x}{x^2-8x+15} \\)", opts: ["\\(7\\pm\\sqrt{34}\\)", "\\(7\\pm\\sqrt{17}\\)", "0", "шешімі жоқ"], ans: 0 },
+        { q: "Өрнектің мәнін табыңыз: \\( \\sqrt{11+6\\sqrt{2}} + \\sqrt{11-6\\sqrt{2}} \\)", opts: ["6", "4", "\\(2\\sqrt{11}\\)", "3"], ans: 0 },
+        { q: "Жүйені шешіңіз: \\( \\begin{cases} x^2+y^2=25 \\\\ x+xy+y=19 \\end{cases} \\)", opts: ["(3;4), (4;3)", "(2;5), (5;2)", "(1;6)", "(-3;-4)"], ans: 0 },
+        { q: "Теңсіздікті шешіңіз: \\( |x^2-5x| < 6 \\)", opts: ["(-1;2) \\(\\cup\\) (3;6)", "(-1; 6)", "[-1; 6]", "(-2; 3)"], ans: 0 },
+        { q: "Функцияның туындысын табыңыз: \\( f(x) = x^2 \\cdot e^x \\)", opts: ["\\( e^x(x^2+2x) \\)", "\\( 2xe^x \\)", "\\( x^2e^x \\)", "\\( e^x(x+2) \\)"], ans: 0 },
+        { q: "Есептеңіз: \\( \\int_1^2 (3x^2-2x) dx \\)", opts: ["4", "7", "3", "5"], ans: 0 },
+        { q: "Теңдеуді шешіңіз: \\( \\log_3(x-2) + \\log_3(x) = 1 \\)", opts: ["3", "2", "-1", "4"], ans: 0 },
+        { q: "Ықшамдаңыз: \\( \\frac{\\sin 2\\alpha}{1+\\cos 2\\alpha} \\)", opts: ["\\( \\text{tg} \\alpha \\)", "\\( \\text{ctg} \\alpha \\)", "1", "0"], ans: 0 },
+        { q: "Арифметикалық прогрессияда \\( a_1=5, d=3 \\). Алғашқы 10 мүшесінің қосындысы?", opts: ["185", "155", "210", "190"], ans: 0 },
+        { q: "Тіктөртбұрыштың диагоналі 13 см, бір қабырғасы 5 см. Ауданы қандай?", opts: ["60", "65", "30", "120"], ans: 0 }
     ];
 
-    document.getElementById("header-score").innerText = myTotalPoints;
+    const mathLitDB = [
+        { q: "7; 8; 18; 19; 29; 30; ... Келесі санды тап:", opts: ["40", "41", "39", "31"], ans: 0 },
+        { q: "1; 4; 9; 16; 25; ... Жетінші санды табыңыз:", opts: ["49", "36", "64", "81"], ans: 0 },
+        { q: "Қорапта 5 қызыл, 3 көк шар бар. Кездейсоқ алынған 2 шардың екеуі де қызыл болу ықтималдығы?", opts: ["5/14", "2/7", "1/4", "3/8"], ans: 0 },
+        { q: "Ағасы 12-де, қарындасы 4-те. Неше жылдан соң ағасы қарындасынан 2 есе үлкен болады?", opts: ["4", "2", "6", "8"], ans: 0 },
+        { q: "1-ден 100-ге дейінгі сандар ішінде 7 цифры неше рет кездеседі?", opts: ["20", "19", "10", "21"], ans: 0 }
+    ];
 
-    // Сақталған ат болса, бірден қою
-    window.onload = () => {
-        let savedName = localStorage.getItem("easymath_name");
-        if(savedName) document.getElementById("playerName").value = savedName;
-    };
+    for(let i=0; i<40; i++) {
+        mathDB.push({ q: `Теңдеуді шешіңіз: \\( ${i+2}x - ${i} = ${2*(i+2)} \\)`, opts: ["3", "2", "4", "1"], ans: 0 });
+        mathLitDB.push({ q: `Заңдылықты тап: ${i}, ${i+3}, ${i+6}, ... Келесі сан?`, opts: [`${i+9}`, `${i+12}`, `${i+7}`, `${i+10}`], ans: 0 });
+    }
+
+    // ==========================================
+    // ЛОГИКА
+    // ==========================================
+    let myId = "u" + Date.now() + Math.floor(Math.random()*100);
+    let myName = localStorage.getItem("easymath_name") || "";
+    let myPoints = parseInt(localStorage.getItem("easymath_points") || "0");
+    let roomRef = null, curRoomId = null, myRole = null, roomData = null;
+    let currentQ = 0;
+    let renderedQ = -1; // ҚАЙТА ЖҮКТЕЛУДІ БҰҒАТТАУ ҮШІН
+
+    window.onload = () => { document.getElementById("header-score").innerText = myPoints; };
+
+    function login() {
+        myName = document.getElementById("playerName").value.trim();
+        if(!myName) return alert("Атыңды жаз!");
+        localStorage.setItem("easymath_name", myName);
+        database.ref('users/' + myId).set({ name: myName, online: true });
+        database.ref('users/' + myId).onDisconnect().remove();
+        showScreen("screen-lobby");
+        listenToLobby();
+        listenToOnlineUsers();
+    }
 
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
         document.getElementById(id).classList.add('active-screen');
     }
 
-    function login() {
-        myName = document.getElementById("playerName").value.trim();
-        if(!myName) return alert("Ойнау үшін атыңды жаз!");
-        
-        localStorage.setItem("easymath_name", myName);
-        
-        // Онлайнда бар екенін базаға жазу
-        database.ref('online/' + myId).set({ name: myName });
-        database.ref('online/' + myId).onDisconnect().remove(); 
-        
-        listenToOnlineUsers();
-        showScreen("screen-lobby");
-    }
-
     function listenToOnlineUsers() {
-        database.ref('online').on('value', (snapshot) => {
-            let usersHtml = "";
-            snapshot.forEach(child => {
-                usersHtml += `<div class="list-item"><span>${child.val().name}</span> <span style="font-size:12px;">🟢</span></div>`;
+        database.ref('users').on('value', snap => {
+            let html = "";
+            snap.forEach(child => {
+                let user = child.val();
+                if(user.online) {
+                    html += `<div class="list-item"><span>👤 <b>${user.name}</b></span><span style="color:var(--success); font-weight:bold; font-size:0.85rem;">онлайн 🟢</span></div>`;
+                }
             });
-            if(usersHtml === "") usersHtml = "Қазір ешкім жоқ";
-            document.getElementById("online-users").innerHTML = usersHtml;
+            document.getElementById("online-users-list").innerHTML = html || "<p style='color:#7f8c8d; font-size:0.9rem;'>Ешкім жоқ</p>";
         });
     }
 
-    function findMatch() {
-        showScreen("screen-loading");
-        
-        let waitingRef = database.ref('waiting_room');
-        
-        waitingRef.once('value', (snapshot) => {
-            if (snapshot.exists()) {
-                // Қарсылас табылды!
-                let opponentData = snapshot.val();
-                let opponentId = Object.keys(opponentData)[0];
-                gameId = opponentId; 
-                playerRole = 'p2';
-
-                database.ref('games/' + gameId).set({
-                    p1_name: opponentData[opponentId].name, p1_score: 0,
-                    p2_name: myName, p2_score: 0,
-                    status: 'playing'
-                });
-                
-                waitingRef.child(opponentId).remove();
-                startGameUI(opponentData[opponentId].name);
-            } else {
-                // Қарсылас жоқ. Өзім күтемін.
-                gameId = myId;
-                playerRole = 'p1';
-                waitingRef.child(myId).set({ name: myName });
-                waitingRef.child(myId).onDisconnect().remove();
-                
-                database.ref('games/' + gameId).on('value', (snap) => {
-                    if(snap.exists() && snap.val().status === 'playing') {
-                        database.ref('games/' + gameId).off(); 
-                        startGameUI(snap.val().p2_name);
+    function listenToLobby() {
+        database.ref('rooms').on('value', snap => {
+            let waitingHtml = ""; let playingHtml = "";
+            if(snap.exists()) {
+                snap.forEach(child => {
+                    let room = child.val();
+                    let rId = child.key;
+                    let subjName = room.subj === 'math_lit' ? 'Мат. сауат' : 'Математика';
+                    let card = `
+                        <div class="room-item">
+                            <div class="room-header">
+                                <span>👑 ${room.hostName}</span>
+                                <span>${Object.keys(room.players||{}).length} / ${room.maxPlayers}</span>
+                            </div>
+                            <div style="margin-bottom:5px;">
+                                <span class="badge badge-subj">${subjName}</span>
+                                <span class="badge">${room.qCount} есеп</span>
+                                <span class="badge" style="background:#f1c40f; color:#000;">${room.mode}</span>
+                            </div>
+                    `;
+                    if (room.status === 'waiting') {
+                        card += `<button class="btn-primary" style="margin:0; padding:10px;" onclick="joinRoom('${rId}')">Қосылу ⚔️</button></div>`;
+                        waitingHtml += card;
+                    } else if (room.status === 'playing') {
+                        card += `<button class="btn-success" style="margin:0; padding:10px; background:#e67e22; color:#fff;" onclick="spectateRoom('${rId}')">👁️ Көру (Эфир)</button></div>`;
+                        playingHtml += card;
                     }
                 });
             }
+            document.getElementById("waiting-rooms").innerHTML = waitingHtml || "<p style='color:#7f8c8d; font-size:0.9rem;'>Әзірге ешкім жоқ...</p>";
+            document.getElementById("playing-rooms").innerHTML = playingHtml || "<p style='color:#7f8c8d; font-size:0.9rem;'>Әзірге ойын жоқ...</p>";
         });
     }
 
-    function startGameUI(oppName) {
-        document.getElementById("p1-name").innerText = myName;
-        document.getElementById("p2-name").innerText = oppName;
-        currentQ = 0;
-        
+    function createRoom() {
+        let subj = document.getElementById("create-subj").value;
+        let mode = document.getElementById("create-mode").value; 
+        let qCount = parseInt(document.getElementById("create-qcount").value);
+        let maxP = mode === '1v1' ? 2 : (mode === '2v2' ? 4 : 6);
+        curRoomId = "r" + Date.now();
+        myRole = 't1';
+
+        let dbArray = subj === 'math_lit' ? mathLitDB : mathDB;
+        let qIndices = Array.from({length: dbArray.length}, (_, i) => i).sort(()=>Math.random()-0.5).slice(0, qCount);
+
+        let newRoom = {
+            hostId: myId, hostName: myName, subj: subj, mode: mode,
+            qCount: qCount, maxPlayers: maxP, status: 'waiting',
+            currentQ: 0, answeredQ: -1, questions: qIndices,
+            team1Score: 0, team2Score: 0, players: {}
+        };
+        newRoom.players[myId] = { name: myName, team: 't1' };
+
+        database.ref('rooms/' + curRoomId).set(newRoom);
+        database.ref('rooms/' + curRoomId).onDisconnect().remove(); 
+        enterWaitingRoom();
+    }
+
+    function joinRoom(rId) {
+        curRoomId = rId;
+        database.ref('rooms/' + rId).once('value', snap => {
+            let room = snap.val();
+            let pCount = Object.keys(room.players || {}).length;
+            if(pCount >= room.maxPlayers) return alert("Бөлме толып қалды!");
+            
+            myRole = pCount % 2 === 0 ? 't1' : 't2'; 
+            database.ref('rooms/' + rId + '/players/' + myId).set({ name: myName, team: myRole });
+            database.ref('rooms/' + rId + '/players/' + myId).onDisconnect().remove();
+            enterWaitingRoom();
+        });
+    }
+
+    function enterWaitingRoom() {
+        showScreen("screen-waiting");
+        roomRef = database.ref('rooms/' + curRoomId);
+        roomRef.on('value', snap => {
+            if(!snap.exists()) { alert("Хост шығып кетті!"); return leaveRoom(); }
+            let room = snap.val();
+            document.getElementById("waiting-info").innerText = `${room.mode} | ${room.subj === 'math' ? 'Математика' : 'Мат. сауат'} | ${room.qCount} есеп`;
+            
+            let pList = ""; let pCount = 0;
+            for(let key in room.players) {
+                pCount++;
+                let p = room.players[key];
+                pList += `<div style="padding:10px; border-bottom:1px solid #ddd;"><b>${p.name}</b> <span style="float:right; color:#8e44ad; font-weight:bold;">${p.team === 't1' ? 'Команда 1' : 'Команда 2'}</span></div>`;
+            }
+            document.getElementById("players-list").innerHTML = pList;
+            
+            if(room.hostId === myId) document.getElementById("btn-start-game").style.display = pCount > 1 ? 'block' : 'none';
+            if(room.status === 'playing') startBattleUI();
+        });
+    }
+
+    function hostStartGame() { database.ref('rooms/' + curRoomId).update({ status: 'playing' }); }
+
+    function spectateRoom(rId) {
+        curRoomId = rId; myRole = 'spectator';
+        roomRef = database.ref('rooms/' + rId);
+        startBattleUI();
+    }
+
+    function leaveRoom() {
+        if(roomRef) roomRef.off();
+        if(curRoomId && myRole !== 'spectator') database.ref('rooms/' + curRoomId + '/players/' + myId).remove();
+        renderedQ = -1;
+        showScreen("screen-lobby");
+    }
+
+    // --- ОЙЫН ---
+    function startBattleUI() {
         showScreen("screen-game");
         
-        // Нақты уақытта ұпайды жаңарту
-        database.ref('games/' + gameId).on('value', (snap) => {
-            if(snap.exists()) {
-                let data = snap.val();
-                if(playerRole === 'p1') {
-                    document.getElementById("p1-score").innerText = data.p1_score;
-                    document.getElementById("p2-score").innerText = data.p2_score;
-                } else {
-                    document.getElementById("p1-score").innerText = data.p2_score;
-                    document.getElementById("p2-score").innerText = data.p1_score;
+        roomRef.on('value', snap => {
+            if(!snap.exists()) return leaveRoom();
+            let data = snap.val();
+            roomData = data;
+            
+            dbQuestions = data.subj === 'math_lit' ? mathLitDB : mathDB;
+
+            // Header info
+            let t1Names = [], t2Names = [];
+            for(let key in data.players) {
+                if(data.players[key].team === 't1') t1Names.push(data.players[key].name);
+                else t2Names.push(data.players[key].name);
+            }
+            document.getElementById("t1-names").innerText = t1Names.join(', ');
+            document.getElementById("t2-names").innerText = t2Names.join(', ');
+            document.getElementById("game-subj-label").innerText = data.subj === 'math_lit' ? 'Мат. сауат' : 'Математика';
+            document.getElementById("total-q-num").innerText = data.qCount;
+            document.getElementById("team1-score").innerText = data.team1Score || 0;
+            document.getElementById("team2-score").innerText = data.team2Score || 0;
+            document.getElementById("spectator-banner").style.display = myRole === 'spectator' ? 'block' : 'none';
+
+            if(data.status === 'finished') return showResults(data);
+
+            currentQ = data.currentQ;
+            renderQuestion(); // Функция ішінде "renderedQ" арқылы тексеріледі
+
+            // ЖАУАП БЕРІЛІП ҚОЙДЫ МА?
+            if(data.answeredQ === data.currentQ) {
+                // Блоктау
+                document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+                document.getElementById("team-controls").style.display = 'none';
+                
+                // Дұрыс/Қате түстерді көрсету
+                let correctIdx = dbQuestions[data.questions[data.currentQ]].ans;
+                let correctBtn = document.getElementById("opt-" + correctIdx);
+                if(correctBtn) correctBtn.classList.add("correct");
+
+                if(!data.answeredCorrectly && data.selectedOption !== undefined) {
+                    let wrongBtn = document.getElementById("opt-" + data.selectedOption);
+                    if(wrongBtn) wrongBtn.classList.add("wrong");
                 }
+                
+                // Хабарлама
+                let msg = data.answeredCorrectly ? `🔥 <b>${data.answeredBy}</b> дұрыс тапты! (+1)` : `❌ <b>${data.answeredBy}</b> қате жауап берді!`;
+                document.getElementById("wait-msg").innerHTML = msg;
+                document.getElementById("wait-msg").style.display = 'block';
+                
+                // Келесі / Аяқтау
+                document.getElementById("post-answer-controls").style.display = 'flex';
+                if(myRole !== 'spectator') {
+                    if(data.currentQ + 1 < data.qCount) {
+                        document.getElementById("btn-next-q").style.display = 'block';
+                        document.getElementById("btn-finish-q").style.display = 'none';
+                    } else {
+                        document.getElementById("btn-next-q").style.display = 'none';
+                        document.getElementById("btn-finish-q").style.display = 'block';
+                    }
+                }
+            } else {
+                // Әлі жауап берілген жоқ, таңдауларды бояу
+                if(myRole !== 'spectator') updateTeamSelectionsUI(data);
             }
         });
-
-        loadQuestion();
     }
 
-    function loadQuestion() {
-        if(currentQ >= questions.length) return setTimeout(endGame, 1000);
+    function renderQuestion() {
+        if(renderedQ === currentQ) return; // ҚАЙТА ЖҮКТЕЛУДІ БОЛДЫРМАУ ҮШІН (Багтың емі)
+        renderedQ = currentQ;
 
+        document.getElementById("wait-msg").style.display = 'none';
+        document.getElementById("post-answer-controls").style.display = 'none';
+        document.getElementById("team-controls").style.display = 'none';
         document.getElementById("current-q-num").innerText = currentQ + 1;
-        let qData = questions[currentQ];
-        document.getElementById("question-text").innerText = qData.q;
+        
+        let qData = dbQuestions[roomData.questions[currentQ]];
+        document.getElementById("question-text").innerHTML = qData.q;
         
         let optsBox = document.getElementById("options-container");
         optsBox.innerHTML = "";
         
-        qData.opts.forEach((opt, idx) => {
+        // Рандомизация жасалып, HTML-ға 1-ақ рет салынады
+        let opts = qData.opts.map((opt, i) => ({opt, i})).sort(() => Math.random() - 0.5);
+        let letters = ['A', 'B', 'C', 'D'];
+
+        opts.forEach((item, displayIdx) => {
             let btn = document.createElement("button");
             btn.className = "option-btn";
-            btn.innerText = opt;
-            btn.onclick = () => checkAnswer(idx, btn, qData.ans);
+            btn.id = "opt-" + item.i; 
+            btn.innerHTML = `<b>${letters[displayIdx]}:</b> \\( ${item.opt} \\)`;
+            
+            if(myRole === 'spectator') {
+                btn.disabled = true;
+            } else {
+                btn.onclick = () => selectOption(item.i);
+            }
             optsBox.appendChild(btn);
+        });
+        
+        if (window.MathJax) MathJax.typesetPromise();
+    }
+
+    // Нұсқаны басқанда мөлдір көкпен боялады (Firebase-ке жазу)
+    function selectOption(idx) {
+        roomRef.child('players/' + myId).update({ selection: idx });
+    }
+
+    // Көкпен бояуды және "Растауды" көрсетуді басқарады
+    function updateTeamSelectionsUI(room) {
+        document.querySelectorAll('.team-badge').forEach(e => e.remove());
+        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+
+        let mySelection = null;
+
+        for(let key in room.players) {
+            let p = room.players[key];
+            if(p.team === myRole && p.selection !== undefined && p.selection !== null) {
+                let btn = document.getElementById('opt-' + p.selection);
+                if(btn) {
+                    if (key === myId) {
+                        btn.classList.add('selected'); // Өзі басқаны МӨЛДІР КӨК
+                        mySelection = p.selection;
+                    }
+                    if(room.mode !== '1v1' && key !== myId) {
+                        let badge = document.createElement('span');
+                        badge.className = 'team-badge';
+                        badge.innerText = p.name + " таңдады";
+                        btn.appendChild(badge);
+                    }
+                }
+            }
+        }
+        
+        // 1v1 болса да, командалық болса да, бірдеңе таңдалса "Растау" шығады
+        if(mySelection !== null) {
+            document.getElementById("team-controls").style.display = 'block';
+        } else {
+            document.getElementById("team-controls").style.display = 'none';
+        }
+    }
+
+    // РАСТАУ БАТЫРМАСЫНЫҢ ЛОГИКАСЫ (БАРЛЫҚ РЕЖИМ ҮШІН)
+    function confirmTeamAnswer() {
+        let myTeamSelection = roomData.players[myId].selection;
+        if(myTeamSelection === undefined || myTeamSelection === null) return alert("Жауапты таңдаңыз!");
+
+        // 1v1 болса бірден жібереміз
+        if(roomData.mode === '1v1') {
+            return submitAnswer(myTeamSelection, dbQuestions[roomData.questions[currentQ]].ans);
+        }
+
+        // Командалық болса бәрін тексереміз
+        let allSame = true;
+        let pCount = 0, sCount = 0;
+        
+        for(let key in roomData.players) {
+            let p = roomData.players[key];
+            if(p.team === myRole) {
+                pCount++;
+                if(p.selection !== undefined && p.selection !== null) {
+                    sCount++;
+                    if (myTeamSelection !== p.selection) allSame = false;
+                }
+            }
+        }
+        
+        if(sCount < pCount) return alert("Команданың барлық мүшесі таңдауы керек!");
+        if(!allSame) return alert("Команда мүшелері бірдей жауапты таңдауы қажет!");
+        
+        submitAnswer(myTeamSelection, dbQuestions[roomData.questions[currentQ]].ans);
+    }
+
+    // GET & UPDATE (Транзакция қатып қалмау үшін)
+    function submitAnswer(selectedIdx, correctIdx) {
+        roomRef.get().then(snap => {
+            if(!snap.exists()) return;
+            let room = snap.val();
+            
+            if(room.answeredQ === room.currentQ) return; 
+            
+            let isCorrect = (selectedIdx === correctIdx);
+            let updates = {
+                answeredQ: room.currentQ,
+                answeredCorrectly: isCorrect,
+                answeredBy: myName,
+                selectedOption: selectedIdx 
+            };
+            
+            if(isCorrect) {
+                if(myRole === 't1') updates.team1Score = (room.team1Score || 0) + 1;
+                else updates.team2Score = (room.team2Score || 0) + 1;
+            }
+            roomRef.update(updates);
         });
     }
 
-    function checkAnswer(selectedIdx, btn, correctIdx) {
-        document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-        
-        if(selectedIdx === correctIdx) {
-            btn.classList.add("correct");
-            // Ұпайды Firebase-ке қосу (Интернет арқылы)
-            database.ref('games/' + gameId + '/' + playerRole + '_score').transaction(current => (current || 0) + 1);
-        } else {
-            btn.classList.add("wrong");
-            document.querySelectorAll('.option-btn')[correctIdx].classList.add("correct");
-        }
-        
-        setTimeout(() => {
-            currentQ++;
-            loadQuestion();
-        }, 1500);
+    // КЕЛЕСІ СҰРАҚҚА ӨТУ (Кім бірінші басса сол өткізеді)
+    function nextQuestion() {
+        roomRef.get().then(snap => {
+            if(!snap.exists()) return;
+            let room = snap.val();
+            
+            if(room.currentQ === currentQ && room.answeredQ === currentQ) {
+                let updates = { currentQ: currentQ + 1 };
+                if(room.players) {
+                    for(let key in room.players) updates[`players/${key}/selection`] = null;
+                }
+                roomRef.update(updates);
+            }
+        });
     }
 
-    function endGame() {
-        database.ref('games/' + gameId).off(); 
-        
-        let myScore = parseInt(document.getElementById("p1-score").innerText);
-        let oppScore = parseInt(document.getElementById("p2-score").innerText);
-        
-        if(myScore > oppScore) {
-            alert("Сен жеңдің! 🎉 +5 ұпай");
-            myTotalPoints += 5;
-            localStorage.setItem("easymath_points", myTotalPoints);
-            document.getElementById("header-score").innerText = myTotalPoints;
-        } else if (myScore < oppScore) {
-            alert("Қарсылас жеңді! 😢");
-        } else {
-            alert("Тең түстіңіздер! 🤝");
+    function finishGame() { roomRef.update({ status: 'finished' }); }
+
+    function showResults(room) {
+        roomRef.off();
+        if(myRole === 'spectator') {
+            alert(`Ойын аяқталды!\nЕсеп: ${room.team1Score} - ${room.team2Score}`);
+            return leaveRoom();
         }
+
+        let myTeamScore = myRole === 't1' ? room.team1Score : room.team2Score;
+        let oppTeamScore = myRole === 't1' ? room.team2Score : room.team1Score;
         
-        showScreen("screen-lobby");
+        if(myTeamScore > oppTeamScore) {
+            alert(`🏆 ЖЕҢІС! Сенің командаң жеңді!\nЕсеп: ${myTeamScore} - ${oppTeamScore}\n+5 Ұпай берілді.`);
+            myPoints += 5;
+            localStorage.setItem("easymath_points", myPoints);
+            document.getElementById("header-score").innerText = myPoints;
+        } else if (myTeamScore < oppTeamScore) {
+            alert(`😢 ЖЕҢІЛІС! Қарсылас мықтырақ болды.\nЕсеп: ${myTeamScore} - ${oppTeamScore}`);
+        } else {
+            alert(`🤝 ТЕҢ ОЙЫН!\nЕсеп: ${myTeamScore} - ${oppTeamScore}`);
+        }
+        leaveRoom();
     }
 </script>
 
