@@ -51,9 +51,8 @@
 
         .question-box { font-size: 1.1rem; font-weight: 600; margin: 15px 0; min-height: 80px; overflow-x: auto; padding-bottom: 10px; line-height: 1.5; }
         
-        /* Жауап батырмалары (Мөлдір көк түс қосылды) */
         .option-btn { background: #fff !important; color: #333 !important; border: 2px solid #eee !important; text-align: left; padding: 12px 15px; position: relative; margin-bottom: 8px; font-size: 1rem; border-radius: 10px; overflow-x: auto; width: 100%; transition: 0.2s; }
-        .option-btn.selected { border-color: var(--primary) !important; background: var(--selected-bg) !important; box-shadow: 0 0 0 1px var(--primary) !important; }
+        .option-btn.selected { border-color: var(--primary) !important; background: var(--selected-bg) !important; box-shadow: 0 0 0 2px var(--primary) !important; }
         .option-btn.correct { background: var(--success) !important; border-color: var(--success) !important; color: #fff !important; }
         .option-btn.wrong { background: var(--danger) !important; border-color: var(--danger) !important; color: #fff !important; }
         .option-btn:disabled { opacity: 0.9; cursor: not-allowed; }
@@ -65,6 +64,20 @@
         
         .spectator-banner { background: var(--gold); color: #000; width: 100%; max-width: 600px; text-align: center; padding: 10px; font-weight: bold; margin-bottom: 15px; border-radius: 10px; box-sizing: border-box; }
         .wait-msg { padding: 15px; border-radius: 10px; background: #fff; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; margin-top: 15px; text-align: center; width: 100%; box-sizing: border-box; }
+
+        /* Ойын нәтижесі хабарламасы */
+        #result-popup {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .result-card {
+            background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%;
+            animation: popIn 0.5s ease-out;
+        }
+        .result-title { font-size: 2rem; font-weight: 900; margin-bottom: 10px; }
+        .result-score { font-size: 1.5rem; color: var(--text); margin-bottom: 15px; }
+        .result-points { font-size: 1.2rem; color: var(--primary); font-weight: bold; }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -74,11 +87,22 @@
         <div class="my-score">🏆 <span id="header-score">0</span></div>
     </div>
 
+    <div id="result-popup">
+        <div class="result-card">
+            <div id="res-icon" style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
+            <div id="res-title" class="result-title">Жеңіс!</div>
+            <div id="res-score" class="result-score">Есеп: 0 - 0</div>
+            <div id="res-points" class="result-points"></div>
+            <p style="color:#7f8c8d; font-size:0.9rem; margin-top:20px;">Лоббиге оралуда... ⏳</p>
+        </div>
+    </div>
+
     <div class="container">
         
         <div id="screen-login" class="screen active-screen">
             <div class="card" style="text-align: center;">
                 <h2>Қош келдің! 🎮</h2>
+                <p style="color:#777; font-size:0.9rem;">Өз атыңды жазып, нағыз жарысқа қатыс</p>
                 <input type="text" id="playerName" placeholder="Аты-жөніңіз..." autocomplete="off">
                 <button class="btn-primary" onclick="login()">Кіру 🚀</button>
             </div>
@@ -176,7 +200,7 @@
     </div>
 
 <script>
-    // ⚠️ МЫНА ЖЕРГЕ ӨЗІҢНІҢ FIREBASE КІЛТІҢДІ ҚОЙ
+    // FIREBASE CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyA2zIwH2HGHjQVVehW19yAtWzzAqY_wy9g",
       authDomain: "easymath-game.firebaseapp.com",
@@ -191,19 +215,14 @@
     const database = firebase.database();
 
     // ==========================================
-    // ЕСЕПТЕР БАЗАСЫ (100 ҚИЫН ЕСЕП)
+    // ЕСЕПТЕР БАЗАСЫ
     // ==========================================
     const mathDB = [
         { q: "Теңдеуді шешіңіз: \\( \\frac{x^2-10x+15}{x^2-6x+15}=\\frac{3x}{x^2-8x+15} \\)", opts: ["\\(7\\pm\\sqrt{34}\\)", "\\(7\\pm\\sqrt{17}\\)", "0", "шешімі жоқ"], ans: 0 },
         { q: "Өрнектің мәнін табыңыз: \\( \\sqrt{11+6\\sqrt{2}} + \\sqrt{11-6\\sqrt{2}} \\)", opts: ["6", "4", "\\(2\\sqrt{11}\\)", "3"], ans: 0 },
         { q: "Жүйені шешіңіз: \\( \\begin{cases} x^2+y^2=25 \\\\ x+xy+y=19 \\end{cases} \\)", opts: ["(3;4), (4;3)", "(2;5), (5;2)", "(1;6)", "(-3;-4)"], ans: 0 },
         { q: "Теңсіздікті шешіңіз: \\( |x^2-5x| < 6 \\)", opts: ["(-1;2) \\(\\cup\\) (3;6)", "(-1; 6)", "[-1; 6]", "(-2; 3)"], ans: 0 },
-        { q: "Функцияның туындысын табыңыз: \\( f(x) = x^2 \\cdot e^x \\)", opts: ["\\( e^x(x^2+2x) \\)", "\\( 2xe^x \\)", "\\( x^2e^x \\)", "\\( e^x(x+2) \\)"], ans: 0 },
-        { q: "Есептеңіз: \\( \\int_1^2 (3x^2-2x) dx \\)", opts: ["4", "7", "3", "5"], ans: 0 },
-        { q: "Теңдеуді шешіңіз: \\( \\log_3(x-2) + \\log_3(x) = 1 \\)", opts: ["3", "2", "-1", "4"], ans: 0 },
-        { q: "Ықшамдаңыз: \\( \\frac{\\sin 2\\alpha}{1+\\cos 2\\alpha} \\)", opts: ["\\( \\text{tg} \\alpha \\)", "\\( \\text{ctg} \\alpha \\)", "1", "0"], ans: 0 },
-        { q: "Арифметикалық прогрессияда \\( a_1=5, d=3 \\). Алғашқы 10 мүшесінің қосындысы?", opts: ["185", "155", "210", "190"], ans: 0 },
-        { q: "Тіктөртбұрыштың диагоналі 13 см, бір қабырғасы 5 см. Ауданы қандай?", opts: ["60", "65", "30", "120"], ans: 0 }
+        { q: "Функцияның туындысын табыңыз: \\( f(x) = x^2 \\cdot e^x \\)", opts: ["\\( e^x(x^2+2x) \\)", "\\( 2xe^x \\)", "\\( x^2e^x \\)", "\\( e^x(x+2) \\)"], ans: 0 }
     ];
 
     const mathLitDB = [
@@ -214,7 +233,7 @@
         { q: "1-ден 100-ге дейінгі сандар ішінде 7 цифры неше рет кездеседі?", opts: ["20", "19", "10", "21"], ans: 0 }
     ];
 
-    for(let i=0; i<40; i++) {
+    for(let i=0; i<45; i++) {
         mathDB.push({ q: `Теңдеуді шешіңіз: \\( ${i+2}x - ${i} = ${2*(i+2)} \\)`, opts: ["3", "2", "4", "1"], ans: 0 });
         mathLitDB.push({ q: `Заңдылықты тап: ${i}, ${i+3}, ${i+6}, ... Келесі сан?`, opts: [`${i+9}`, `${i+12}`, `${i+7}`, `${i+10}`], ans: 0 });
     }
@@ -227,7 +246,7 @@
     let myPoints = parseInt(localStorage.getItem("easymath_points") || "0");
     let roomRef = null, curRoomId = null, myRole = null, roomData = null;
     let currentQ = 0;
-    let renderedQ = -1; // ҚАЙТА ЖҮКТЕЛУДІ БҰҒАТТАУ ҮШІН
+    let renderedQ = -1; 
 
     window.onload = () => { document.getElementById("header-score").innerText = myPoints; };
 
@@ -379,7 +398,6 @@
             
             dbQuestions = data.subj === 'math_lit' ? mathLitDB : mathDB;
 
-            // Header info
             let t1Names = [], t2Names = [];
             for(let key in data.players) {
                 if(data.players[key].team === 't1') t1Names.push(data.players[key].name);
@@ -396,15 +414,13 @@
             if(data.status === 'finished') return showResults(data);
 
             currentQ = data.currentQ;
-            renderQuestion(); // Функция ішінде "renderedQ" арқылы тексеріледі
+            renderQuestion();
 
             // ЖАУАП БЕРІЛІП ҚОЙДЫ МА?
             if(data.answeredQ === data.currentQ) {
-                // Блоктау
                 document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
                 document.getElementById("team-controls").style.display = 'none';
                 
-                // Дұрыс/Қате түстерді көрсету
                 let correctIdx = dbQuestions[data.questions[data.currentQ]].ans;
                 let correctBtn = document.getElementById("opt-" + correctIdx);
                 if(correctBtn) correctBtn.classList.add("correct");
@@ -414,12 +430,10 @@
                     if(wrongBtn) wrongBtn.classList.add("wrong");
                 }
                 
-                // Хабарлама
                 let msg = data.answeredCorrectly ? `🔥 <b>${data.answeredBy}</b> дұрыс тапты! (+1)` : `❌ <b>${data.answeredBy}</b> қате жауап берді!`;
                 document.getElementById("wait-msg").innerHTML = msg;
                 document.getElementById("wait-msg").style.display = 'block';
                 
-                // Келесі / Аяқтау
                 document.getElementById("post-answer-controls").style.display = 'flex';
                 if(myRole !== 'spectator') {
                     if(data.currentQ + 1 < data.qCount) {
@@ -431,14 +445,13 @@
                     }
                 }
             } else {
-                // Әлі жауап берілген жоқ, таңдауларды бояу
                 if(myRole !== 'spectator') updateTeamSelectionsUI(data);
             }
         });
     }
 
     function renderQuestion() {
-        if(renderedQ === currentQ) return; // ҚАЙТА ЖҮКТЕЛУДІ БОЛДЫРМАУ ҮШІН (Багтың емі)
+        if(renderedQ === currentQ) return; 
         renderedQ = currentQ;
 
         document.getElementById("wait-msg").style.display = 'none';
@@ -452,7 +465,6 @@
         let optsBox = document.getElementById("options-container");
         optsBox.innerHTML = "";
         
-        // Рандомизация жасалып, HTML-ға 1-ақ рет салынады
         let opts = qData.opts.map((opt, i) => ({opt, i})).sort(() => Math.random() - 0.5);
         let letters = ['A', 'B', 'C', 'D'];
 
@@ -462,23 +474,19 @@
             btn.id = "opt-" + item.i; 
             btn.innerHTML = `<b>${letters[displayIdx]}:</b> \\( ${item.opt} \\)`;
             
-            if(myRole === 'spectator') {
-                btn.disabled = true;
-            } else {
-                btn.onclick = () => selectOption(item.i);
-            }
+            if(myRole === 'spectator') btn.disabled = true;
+            else btn.onclick = () => selectOption(item.i);
+            
             optsBox.appendChild(btn);
         });
         
         if (window.MathJax) MathJax.typesetPromise();
     }
 
-    // Нұсқаны басқанда мөлдір көкпен боялады (Firebase-ке жазу)
     function selectOption(idx) {
         roomRef.child('players/' + myId).update({ selection: idx });
     }
 
-    // Көкпен бояуды және "Растауды" көрсетуді басқарады
     function updateTeamSelectionsUI(room) {
         document.querySelectorAll('.team-badge').forEach(e => e.remove());
         document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
@@ -491,7 +499,7 @@
                 let btn = document.getElementById('opt-' + p.selection);
                 if(btn) {
                     if (key === myId) {
-                        btn.classList.add('selected'); // Өзі басқаны МӨЛДІР КӨК
+                        btn.classList.add('selected'); 
                         mySelection = p.selection;
                     }
                     if(room.mode !== '1v1' && key !== myId) {
@@ -504,25 +512,18 @@
             }
         }
         
-        // 1v1 болса да, командалық болса да, бірдеңе таңдалса "Растау" шығады
-        if(mySelection !== null) {
-            document.getElementById("team-controls").style.display = 'block';
-        } else {
-            document.getElementById("team-controls").style.display = 'none';
-        }
+        if(mySelection !== null) document.getElementById("team-controls").style.display = 'block';
+        else document.getElementById("team-controls").style.display = 'none';
     }
 
-    // РАСТАУ БАТЫРМАСЫНЫҢ ЛОГИКАСЫ (БАРЛЫҚ РЕЖИМ ҮШІН)
     function confirmTeamAnswer() {
         let myTeamSelection = roomData.players[myId].selection;
         if(myTeamSelection === undefined || myTeamSelection === null) return alert("Жауапты таңдаңыз!");
 
-        // 1v1 болса бірден жібереміз
         if(roomData.mode === '1v1') {
             return submitAnswer(myTeamSelection, dbQuestions[roomData.questions[currentQ]].ans);
         }
 
-        // Командалық болса бәрін тексереміз
         let allSame = true;
         let pCount = 0, sCount = 0;
         
@@ -543,7 +544,6 @@
         submitAnswer(myTeamSelection, dbQuestions[roomData.questions[currentQ]].ans);
     }
 
-    // GET & UPDATE (Транзакция қатып қалмау үшін)
     function submitAnswer(selectedIdx, correctIdx) {
         roomRef.get().then(snap => {
             if(!snap.exists()) return;
@@ -567,7 +567,6 @@
         });
     }
 
-    // КЕЛЕСІ СҰРАҚҚА ӨТУ (Кім бірінші басса сол өткізеді)
     function nextQuestion() {
         roomRef.get().then(snap => {
             if(!snap.exists()) return;
@@ -585,27 +584,57 @@
 
     function finishGame() { roomRef.update({ status: 'finished' }); }
 
+    // АВТОМАТТЫ ТҮРДЕ ЖОҒАЛАТЫН ХАБАРЛАМА (АЛЕРТ ОРНЫНА)
     function showResults(room) {
         roomRef.off();
+        
+        let popup = document.getElementById("result-popup");
+        let title = document.getElementById("res-title");
+        let score = document.getElementById("res-score");
+        let points = document.getElementById("res-points");
+        let icon = document.getElementById("res-icon");
+
+        score.innerText = `Есеп: ${room.team1Score} - ${room.team2Score}`;
+
         if(myRole === 'spectator') {
-            alert(`Ойын аяқталды!\nЕсеп: ${room.team1Score} - ${room.team2Score}`);
-            return leaveRoom();
+            title.innerText = "Ойын аяқталды!";
+            title.style.color = "var(--text)";
+            icon.innerText = "🏁";
+            points.innerText = "";
+        } else {
+            let myTeamScore = myRole === 't1' ? room.team1Score : room.team2Score;
+            let oppTeamScore = myRole === 't1' ? room.team2Score : room.team1Score;
+            
+            if(myTeamScore > oppTeamScore) {
+                title.innerText = "Жеңіс! 🎉";
+                title.style.color = "var(--success)";
+                icon.innerText = "🏆";
+                points.innerText = "+5 Ұпай берілді!";
+                
+                myPoints += 5;
+                localStorage.setItem("easymath_points", myPoints);
+                document.getElementById("header-score").innerText = myPoints;
+            } else if (myTeamScore < oppTeamScore) {
+                title.innerText = "Жеңіліс! 😢";
+                title.style.color = "var(--danger)";
+                icon.innerText = "💔";
+                points.innerText = "Келесі жолы жолыңыз болады!";
+            } else {
+                title.innerText = "Тең ойын! 🤝";
+                title.style.color = "var(--primary)";
+                icon.innerText = "⚖️";
+                points.innerText = "Мықтылар тең түсті.";
+            }
         }
 
-        let myTeamScore = myRole === 't1' ? room.team1Score : room.team2Score;
-        let oppTeamScore = myRole === 't1' ? room.team2Score : room.team1Score;
-        
-        if(myTeamScore > oppTeamScore) {
-            alert(`🏆 ЖЕҢІС! Сенің командаң жеңді!\nЕсеп: ${myTeamScore} - ${oppTeamScore}\n+5 Ұпай берілді.`);
-            myPoints += 5;
-            localStorage.setItem("easymath_points", myPoints);
-            document.getElementById("header-score").innerText = myPoints;
-        } else if (myTeamScore < oppTeamScore) {
-            alert(`😢 ЖЕҢІЛІС! Қарсылас мықтырақ болды.\nЕсеп: ${myTeamScore} - ${oppTeamScore}`);
-        } else {
-            alert(`🤝 ТЕҢ ОЙЫН!\nЕсеп: ${myTeamScore} - ${oppTeamScore}`);
-        }
-        leaveRoom();
+        popup.style.display = "flex";
+
+        // 3 секундтан кейін лоббиге қайтару
+        setTimeout(() => {
+            popup.style.display = "none";
+            leaveRoom();
+            renderedQ = -1;
+        }, 3000);
     }
 </script>
 
