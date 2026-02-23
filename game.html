@@ -53,7 +53,7 @@
         .question-box { font-size: 1.1rem; font-weight: 600; margin: 15px 0; min-height: 80px; overflow-x: auto; padding-bottom: 10px; line-height: 1.5; }
         
         /* Жауап батырмалары */
-        .option-btn { background: #fff !important; color: #333 !important; border: 2px solid #eee !important; text-align: left; padding: 12px 15px; position: relative; margin-bottom: 8px; font-size: 1rem; border-radius: 10px; overflow-x: auto; width: 100%; transition: 0.2s; }
+        .option-btn { background: #fff !important; color: #333 !important; border: 2px solid #eee !important; text-align: left; padding: 12px 15px; position: relative; margin-bottom: 8px; font-size: 1rem; border-radius: 10px; overflow-x: auto; width: 100%; transition: 0.2s; cursor: pointer; }
         .option-btn.selected { border-color: var(--primary) !important; background: var(--selected-bg) !important; box-shadow: 0 0 0 2px var(--primary) !important; }
         .option-btn.correct { background: var(--success) !important; border-color: var(--success) !important; color: #fff !important; }
         .option-btn.wrong { background: var(--danger) !important; border-color: var(--danger) !important; color: #fff !important; }
@@ -85,7 +85,7 @@
 <body>
 
     <div class="header">
-        <div class="logo" onclick="location.href='index.html'">← EasyMath</div>
+        <div class="logo" onclick="safeGoHome()">← EasyMath</div>
         <div class="my-score">🏆 <span id="header-score">0</span></div>
     </div>
 
@@ -162,7 +162,7 @@
                 <div id="waiting-info" style="margin-bottom: 20px; font-weight: bold; color: var(--primary);"></div>
                 <div id="players-list" style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 20px;"></div>
                 <button class="btn-success" id="btn-start-game" onclick="hostStartGame()" style="display: none; padding: 18px; font-size:1.2rem;">Ойынды Бастау 🚀</button>
-                <button class="btn-danger" onclick="leaveRoom()" style="background: #95a5a6;">Бас тарту</button>
+                <button class="btn-danger" onclick="leaveRoomSafe()" style="background: #95a5a6;">Бас тарту</button>
             </div>
         </div>
 
@@ -196,7 +196,7 @@
                 </div>
             </div>
             
-            <button class="btn-danger" onclick="leaveRoom()" style="max-width: 200px; background: #bdc3c7; margin-top: 10px;">Шығу</button>
+            <button class="btn-danger" onclick="leaveRoomSafe()" style="max-width: 200px; background: #bdc3c7; margin-top: 10px;">Ойыннан шығу</button>
         </div>
 
     </div>
@@ -220,7 +220,6 @@
     // ЕСЕПТЕР БАЗАСЫ (МАТЕМАТИКА - 100 ҚИЫН ЕСЕП)
     // ==========================================
     const mathDB = [
-        // ЛОГАРИФМДЕР ЖӘНЕ КӨРСЕТКІШТІК (25)
         { q: "Өрнектің мәнін табыңыз: \\( 10^{2-\\lg 5} \\)", opts: ["20", "15", "25", "50"], ans: 0 },
         { q: "Есептеңіз: \\( 3^{\\log_3 7} + 2^{\\log_4 9} \\)", opts: ["10", "16", "13", "8"], ans: 0 },
         { q: "Теңдеуді шешіңіз: \\( \\log_2(x^2 - 3x) = 2 \\)", opts: ["-1; 4", "1; -4", "2; -2", "0; 3"], ans: 0 },
@@ -241,13 +240,6 @@
         { q: "Өрнекті ықшамдаңыз: \\( a^{\\frac{1}{\\log_{b^2} a}} \\)", opts: ["\\( b^2 \\)", "b", "a/b", "\\( a^2 \\)"], ans: 0 },
         { q: "Теңдеулер жүйесін шешіңіз: \\( \\begin{cases} \\log_3 x - \\log_3 y = 1 \\\\ x^2 - y^2 = 72 \\end{cases} \\)", opts: ["(9; 3)", "(3; 1)", "(12; 4)", "(-9; -3)"], ans: 0 },
         { q: "Өрнектің мәнін табыңыз: \\( \\frac{\\log_3 135}{\\log_{15} 3} - \\frac{\\log_3 5}{\\log_{405} 3} \\)", opts: ["3", "5", "1", "2"], ans: 0 },
-        { q: "Теңдеуді шешіңіз: \\( 5^{2x-1} + 5^{2x+1} = 130 \\)", opts: ["1", "0", "2", "-1"], ans: 0 },
-        { q: "Теңсіздікті шешіңіз: \\( 2^{x+2} - 2^x \\ge 96 \\)", opts: ["[5; \\infty)", "(5; \\infty)", "(-\\infty; 5]", "[4; \\infty)"], ans: 0 },
-        { q: "Теңдеуді шешіңіз: \\( 4^x - 10 \\cdot 2^{x-1} - 24 = 0 \\)", opts: ["3", "2", "4", "5"], ans: 0 },
-        { q: "Теңсіздікті шешіңіз: \\( (1/3)^{x^2-4x} \\ge 27 \\)", opts: ["[1; 3]", "(1; 3)", "(-\\infty; 1] \\(\\cup\\) [3; \\infty)", "[-1; 3]"], ans: 0 },
-        { q: "Теңдеулер жүйесін шешіңіз: \\( \\begin{cases} 2^x \\cdot 3^y = 12 \\\\ 2^y \\cdot 3^x = 18 \\end{cases} \\)", opts: ["(1; 1)", "(2; 1)", "(1; 2)", "(2; 2)"], ans: 0 },
-
-        // ТРИГОНОМЕТРИЯ (25)
         { q: "Өрнекті ықшамдаңыз: \\( \\frac{\\sin 3\\alpha}{\\sin \\alpha} - \\frac{\\cos 3\\alpha}{\\cos \\alpha} \\)", opts: ["2", "1", "\\( \\sin 2\\alpha \\)", "0"], ans: 0 },
         { q: "Есептеңіз: \\( \\sin^4 \\frac{\\pi}{8} + \\cos^4 \\frac{\\pi}{8} \\)", opts: ["3/4", "1", "1/2", "1/4"], ans: 0 },
         { q: "Теңдеуді шешіңіз: \\( \\sqrt{3}\\sin x + \\cos x = 2 \\)", opts: ["\\( \\frac{\\pi}{6} + 2\\pi k \\)", "\\( \\frac{\\pi}{3} + 2\\pi k \\)", "\\( \\frac{\\pi}{2} + 2\\pi k \\)", "\\( \\frac{\\pi}{4} + 2\\pi k \\)"], ans: 0 },
@@ -268,13 +260,6 @@
         { q: "Теңсіздікті шешіңіз: \\( \\sin x + \\cos x \\le 0 \\)", opts: ["\\( [\\frac{3\\pi}{4} + 2\\pi k; \\frac{7\\pi}{4} + 2\\pi k] \\)", "\\( [-\\frac{\\pi}{4} + 2\\pi k; \\frac{3\\pi}{4} + 2\\pi k] \\)", "\\( [\\frac{5\\pi}{4} + 2\\pi k; \\frac{9\\pi}{4} + 2\\pi k] \\)", "\\( [\\frac{\\pi}{4} + 2\\pi k; \\frac{5\\pi}{4} + 2\\pi k] \\)"], ans: 0 },
         { q: "Өрнектің мәнін табыңыз: \\( \\arcsin(-\\frac{1}{2}) + \\arccos(-\\frac{\\sqrt{2}}{2}) \\)", opts: ["\\( \\frac{7\\pi}{12} \\)", "\\( \\frac{5\\pi}{12} \\)", "\\( \\frac{11\\pi}{12} \\)", "\\( \\frac{\\pi}{12} \\)"], ans: 0 },
         { q: "Теңдеуді шешіңіз: \\( \\text{tg} x + \\text{ctg} x = 2 \\)", opts: ["\\( \\frac{\\pi}{4} + \\pi k \\)", "\\( \\frac{\\pi}{2} + \\pi k \\)", "\\( \\pm\\frac{\\pi}{4} + \\pi k \\)", "\\( \\frac{\\pi}{6} + \\pi k \\)"], ans: 0 },
-        { q: "Өрнекті ықшамдаңыз: \\( \\cos 10^\\circ \\cos 20^\\circ \\cos 40^\\circ \\)", opts: ["\\( \\frac{1}{8\\sin 10^\\circ} \\)", "\\( \\frac{1}{4} \\)", "\\( \\frac{\\sin 80^\\circ}{8} \\)", "\\( \\frac{1}{2} \\)"], ans: 0 },
-        { q: "Теңдеуді шешіңіз: \\( 3\\sin^2 x - 4\\sin x \\cos x + \\cos^2 x = 0 \\)", opts: ["\\( \\frac{\\pi}{4} + \\pi k; \\text{arctg} \\frac{1}{3} + \\pi k \\)", "\\( \\frac{\\pi}{4} + \\pi k; \\text{arctg} 3 + \\pi k \\)", "\\( \\frac{\\pi}{2} + \\pi k \\)", "шешімі жоқ"], ans: 0 },
-        { q: "Теңсіздікті шешіңіз: \\( 2\\cos^2 x - 1 \\ge 0 \\)", opts: ["\\( [-\\frac{\\pi}{4} + \\pi k; \\frac{\\pi}{4} + \\pi k] \\)", "\\( [\\frac{\\pi}{4} + \\pi k; \\frac{3\\pi}{4} + \\pi k] \\)", "\\( [-\\frac{\\pi}{2} + \\pi k; \\frac{\\pi}{2} + \\pi k] \\)", "\\( [0; \\frac{\\pi}{2} + \\pi k] \\)"], ans: 0 },
-        { q: "Өрнектің мәнін табыңыз: \\( \\text{tg}( \\text{arccos} \\frac{4}{5} ) \\)", opts: ["3/4", "4/3", "3/5", "5/4"], ans: 0 },
-        { q: "Есептеңіз: \\( \\sin 15^\\circ \\)", opts: ["\\( \\frac{\\sqrt{6}-\\sqrt{2}}{4} \\)", "\\( \\frac{\\sqrt{6}+\\sqrt{2}}{4} \\)", "\\( \\frac{\\sqrt{3}-1}{2} \\)", "\\( \\frac{\\sqrt{3}}{2} \\)"], ans: 0 },
-
-        // ТУЫНДЫ (25)
         { q: "Функцияның туындысын табыңыз: \\( f(x) = x^2 \\cdot e^x \\)", opts: ["\\( e^x(x^2+2x) \\)", "\\( 2xe^x \\)", "\\( x^2e^x \\)", "\\( e^x(x+2) \\)"], ans: 0 },
         { q: "Функцияның туындысын табыңыз: \\( f(x) = \\ln(x^2+1) \\)", opts: ["\\( \\frac{2x}{x^2+1} \\)", "\\( \\frac{1}{x^2+1} \\)", "\\( \\frac{x}{x^2+1} \\)", "\\( 2x \\cdot \\ln(x^2+1) \\)"], ans: 0 },
         { q: "Функцияның туындысын табыңыз: \\( f(x) = \\frac{\\sin x}{x} \\)", opts: ["\\( \\frac{x\\cos x - \\sin x}{x^2} \\)", "\\( \\frac{\\cos x}{1} \\)", "\\( \\frac{\\sin x - x\\cos x}{x^2} \\)", "\\( \\cos x - \\sin x \\)"], ans: 0 },
@@ -285,23 +270,6 @@
         { q: "\\( f(x) = x^3 - 3x \\) функциясының кему аралығын табыңыз.", opts: ["[-1; 1]", "(-\\infty; -1] \\(\\cup\\) [1; \\infty)", "(-1; 1)", "(0; 1)"], ans: 0 },
         { q: "\\( f(x) = e^{2x} \\cos x \\) функциясының туындысын табыңыз.", opts: ["\\( e^{2x}(2\\cos x - \\sin x) \\)", "\\( e^{2x}(\\cos x - \\sin x) \\)", "\\( 2e^{2x}\\cos x \\)", "\\( -e^{2x}\\sin x \\)"], ans: 0 },
         { q: "Функция графигіне \\( x_0 = 1 \\) нүктесінде жүргізілген жанаманың теңдеуін жазыңыз: \\( f(x) = x^2 - 4x + 5 \\)", opts: ["y = -2x + 4", "y = 2x - 4", "y = -2x + 5", "y = 2x + 4"], ans: 0 },
-        { q: "Функцияның туындысын табыңыз: \\( f(x) = x \\ln x \\)", opts: ["\\( \\ln x + 1 \\)", "\\( \\ln x \\)", "\\( 1/x \\)", "\\( x/\\ln x \\)"], ans: 0 },
-        { q: "Функцияның туындысын табыңыз: \\( f(x) = \\sin^2 x \\)", opts: ["\\( \\sin 2x \\)", "\\( 2\\sin x \\)", "\\( 2\\cos x \\)", "\\( \\cos^2 x \\)"], ans: 0 },
-        { q: "Функцияның минимумын табыңыз: \\( f(x) = x^2 - 8x + 12 \\)", opts: ["-4", "4", "12", "-8"], ans: 0 },
-        { q: "Функцияның туындысын табыңыз: \\( f(x) = \\text{tg} 2x \\)", opts: ["\\( \\frac{2}{\\cos^2 2x} \\)", "\\( \\frac{1}{\\cos^2 2x} \\)", "\\( \\frac{2}{\\sin^2 2x} \\)", "\\( -\\frac{2}{\\cos^2 2x} \\)"], ans: 0 },
-        { q: "\\( f(x) = \\frac{x^3}{3} - \\frac{x^2}{2} - 6x \\) функциясының сындық нүктелерін табыңыз.", opts: ["-2; 3", "2; -3", "0; 6", "-6; 0"], ans: 0 },
-        { q: "Функция графигіне \\( x_0 = 0 \\) нүктесінде жүргізілген жанаманың теңдеуін жазыңыз: \\( y = e^x \\)", opts: ["y = x + 1", "y = x", "y = e^x", "y = 1"], ans: 0 },
-        { q: "Функцияның туындысын табыңыз: \\( f(x) = \\frac{x^2+1}{x} \\)", opts: ["\\( \\frac{x^2-1}{x^2} \\)", "\\( \\frac{x^2+1}{x^2} \\)", "\\( 2x \\)", "\\( 1 - \\frac{1}{x} \\)"], ans: 0 },
-        { q: "Шардың көлемі \\( V(r) = \\frac{4}{3}\\pi r^3 \\). Көлемнің радиус бойынша өзгеру жылдамдығы (туындысы):", opts: ["\\( 4\\pi r^2 \\)", "\\( \\frac{4}{3}\\pi r^2 \\)", "\\( 2\\pi r \\)", "\\( 8\\pi r \\)"], ans: 0 },
-        { q: "Нүкте \\( S(t) = t^3 - 3t \\) заңымен қозғалады. t=3 болғандағы үдеуді табыңыз.", opts: ["18", "24", "9", "27"], ans: 0 },
-        { q: "Функцияның туындысын табыңыз: \\( f(x) = \\log_2(3x) \\)", opts: ["\\( \\frac{1}{x \\ln 2} \\)", "\\( \\frac{3}{x \\ln 2} \\)", "\\( \\frac{1}{3x \\ln 2} \\)", "\\( \\frac{\\ln 2}{x} \\)"], ans: 0 },
-        { q: "\\( y = x^4 - 2x^2 \\) функциясының ең кіші мәнін табыңыз.", opts: ["-1", "0", "-2", "1"], ans: 0 },
-        { q: "Функцияның туындысын табыңыз: \\( f(x) = \\sqrt[3]{x^2} \\)", opts: ["\\( \\frac{2}{3\\sqrt[3]{x}} \\)", "\\( \\frac{3}{2\\sqrt[3]{x}} \\)", "\\( \\frac{2}{3}x \\)", "\\( \\frac{1}{\\sqrt[3]{x^2}} \\)"], ans: 0 },
-        { q: "Материалдық нүкте \\( S(t) = t^2 + 5t + 2 \\) заңымен қозғалады. Жылдамдығы 11-ге тең болатын уақыт мезеті (t):", opts: ["3", "2", "4", "5"], ans: 0 },
-        { q: "Туындыны табыңыз: \\( f(x) = \\cos^3 x \\)", opts: ["\\( -3\\cos^2 x \\sin x \\)", "\\( 3\\cos^2 x \\)", "\\( -3\\sin^2 x \\)", "\\( 3\\cos^2 x \\sin x \\)"], ans: 0 },
-        { q: "\\( f(x) = x^3 - 12x \\) функциясының [-1; 3] кесіндісіндегі ең үлкен мәні:", opts: ["11", "16", "-16", "0"], ans: 0 },
-
-        // ТЕҢДЕУЛЕР, ТЕҢСІЗДІКТЕР ЖӘНЕ ИНТЕГРАЛДАР (25)
         { q: "Есептеңіз: \\( \\int_1^2 (3x^2-2x) dx \\)", opts: ["4", "7", "3", "5"], ans: 0 },
         { q: "Теңдеуді шешіңіз: \\( \\frac{x^2-10x+15}{x^2-6x+15}=\\frac{3x}{x^2-8x+15} \\)", opts: ["\\(7\\pm\\sqrt{34}\\)", "\\(7\\pm\\sqrt{17}\\)", "0", "шешімі жоқ"], ans: 0 },
         { q: "Өрнектің мәнін табыңыз: \\( \\sqrt{11+6\\sqrt{2}} + \\sqrt{11-6\\sqrt{2}} \\)", opts: ["6", "4", "\\(2\\sqrt{11}\\)", "3"], ans: 0 },
@@ -326,7 +294,31 @@
         { q: "Теңсіздікті шешіңіз: \\( x^8-6x^7+9x^6-x^2+6x-9<0 \\)", opts: ["(-1;1)", "(-\\infty;-1)\\cup(1;\\infty)", "(0;1)", "(-1;0)"], ans: 0 },
         { q: "Теңсіздікті шешіңіз: \\( (x^4-1)(x^2+11)\\ge 0 \\)", opts: ["(-\\infty;-1]\\cup[1;\\infty)", "[-1;1]", "[1;\\infty)", "(-\\infty;-1]"], ans: 0 },
         { q: "Бөлшек-рационал теңсіздікті шешіңіз: \\( (\\frac{3-x}{2+x})^2>1 \\)", opts: ["(-\\infty;-2)\\cup(-2; 1/2)", "(1/2; \\infty)", "(-2; 1/2)", "(-\\infty; 1/2)"], ans: 0 },
-        { q: "Теңсіздікті шешіңіз: \\( |2x^2-9x+15|\\ge 20 \\)", opts: ["(-\\infty;-0,5]\\cup[5;\\infty)", "[-0,5;5]", "(-\\infty;5]", "[-0,5;\\infty)"], ans: 0 }
+        { q: "Теңсіздікті шешіңіз: \\( |2x^2-9x+15|\\ge 20 \\)", opts: ["(-\\infty;-0,5]\\cup[5;\\infty)", "[-0,5;5]", "(-\\infty;5]", "[-0,5;\\infty)"], ans: 0 },
+        { q: "Теңсіздікті шешіңіз: \\( |x- |x^2| |\\le |x^2-3x+4| \\)", opts: ["(-\\infty;1,5]", "[1,5;\\infty)", "[-1,5;1,5]", "(-\\infty;\\infty)"], ans: 0 },
+        { q: "Теңсіздікті шешіңіз: \\( |x^2+x-2|>|x+2| \\)", opts: ["(-\\infty;-2)\\cup(-2;0)\\cup(2;\\infty)", "(-2;0)\\cup(2;\\infty)", "(-\\infty;0)\\cup(2;\\infty)", "(-2;2)"], ans: 0 },
+        { q: "Теңсіздікті шешіңіз: \\( |x|<-x^2+x+6 \\)", opts: ["(1-\\sqrt{7};\\sqrt{6})", "(-\\sqrt{6};\\sqrt{6})", "(1-\\sqrt{7};1+\\sqrt{7})", "(-\\sqrt{7};\\sqrt{6})"], ans: 0 },
+        { q: "Теңдеулер жүйесін шешіңіз: \\( \\begin{cases} 4x^2-3xy+8x-6y=0 \\\\ 3x-11y=-17 \\end{cases} \\)", opts: ["(-2;1), (51/35; 68/35)", "(2;-1), (-51/35; -68/35)", "(-2;1)", "(51/35; 68/35)"], ans: 0 },
+        { q: "Теңдеулер жүйесін шешіңіз: \\( \\begin{cases} x^2=2x+3y \\\\ y^2=2y+3x \\end{cases} \\)", opts: ["(0;0), (5;5)", "(0;0)", "(5;5)", "(-5;-5)"], ans: 0 },
+        { q: "Теңдеуді шешіңіз: \\( 2|x^2+2x-5|=x-1 \\)", opts: ["3", "-3", "1", "0"], ans: 0 },
+        { q: "Теңдеуді шешіңіз: \\( |x^2-x+3|=x+2 \\)", opts: ["1", "-1", "2", "3"], ans: 0 },
+        { q: "Теңдеуді шешіңіз: \\( ||x-2|+3|=3 \\)", opts: ["2", "-2", "0", "4"], ans: 0 },
+        { q: "Теңдеулер жүйесін шешіңіз: \\( \\begin{cases} x+y=2 \\\\ |3x-y|=1 \\end{cases} \\)", opts: ["(3/4; 5/4), (1/4; 7/4)", "(3/4; 5/4)", "(1/4; 7/4)", "шешімі жоқ"], ans: 0 },
+        { q: "Теңдеулер жүйесін шешіңіз: \\( \\begin{cases} |y|=x-3 \\\\ y=x^2-8x+15 \\end{cases} \\)", opts: ["(3; 0), (4; -1), (6; 3)", "(3; 0)", "(4; -1)", "(6; 3)"], ans: 0 },
+        { q: "Теңсіздікті шешіңіз: \\( \\frac{|x-3|}{x^2-5x+6}\\ge 2 \\)", opts: ["(1,5; 2)", "[1,5; 2)", "(1,5; 2]", "[1,5; 2]"], ans: 0 },
+        { q: "Теңсіздікті шешіңіз: \\( \\frac{|x+3|+x}{x+2}>1 \\)", opts: ["(-5;-2)\\cup(-1;\\infty)", "[-5;-2)\\cup(-1;\\infty)", "(-5;-2]\\cup[-1;\\infty)", "(-5;-2)\\cup[-1;\\infty)"], ans: 0 },
+        { q: "Теңсіздікті шешіңіз: \\( 3x^2-|x-3|>9x-2 \\)", opts: ["\\( (-\\infty; \\frac{4-\\sqrt{19}}{3}) \\cup (\\frac{4+\\sqrt{19}}{3}; \\infty) \\)", "\\( [\\frac{4-\\sqrt{19}}{3}; \\frac{4+\\sqrt{19}}{3}] \\)", "\\( (\\frac{4-\\sqrt{19}}{3}; \\frac{4+\\sqrt{19}}{3}) \\)", "\\( (-\\infty; \\frac{4-\\sqrt{19}}{3}] \\cup [\\frac{4+\\sqrt{19}}{3}; \\infty) \\)"], ans: 0 },
+        { q: "Теңсіздіктер жүйесін шешіңіз: \\( \\begin{cases} |2x^2-23x+13|<25 \\\\ x>8 \\end{cases} \\)", opts: ["(9,5; 12)", "[9,5; 12]", "(9,5; 12]", "[9,5; 12)"], ans: 0 },
+        { q: "Теңсіздіктер жүйесін шешіңіз: \\( \\begin{cases} |x^2-4x|<5 \\\\ |x+1|<3 \\end{cases} \\)", opts: ["(-1; 2)", "[-1; 2]", "(-1; 2]", "[-1; 2)"], ans: 0 },
+        { q: "Өрнекті ықшамдаңыз: \\( \\frac{1}{\\sqrt[4]{3}+\\sqrt[4]{2}} \\)", opts: ["\\( (\\sqrt[4]{3}-\\sqrt[4]{2})(\\sqrt{3}+\\sqrt{2}) \\)", "\\( (\\sqrt[4]{3}+\\sqrt[4]{2})(\\sqrt{3}-\\sqrt{2}) \\)", "\\( (\\sqrt[4]{3}-\\sqrt[4]{2})(\\sqrt{3}-\\sqrt{2}) \\)", "\\( (\\sqrt[4]{3}+\\sqrt[4]{2})(\\sqrt{3}+\\sqrt{2}) \\)"], ans: 0 },
+        { q: "Өрнекті ықшамдаңыз: \\( \\frac{1}{\\sqrt[4]{2}-1} \\)", opts: ["\\( (\\sqrt[4]{2}+1)(\\sqrt{2}+1) \\)", "\\( (\\sqrt[4]{2}-1)(\\sqrt{2}+1) \\)", "\\( (\\sqrt[4]{2}+1)(\\sqrt{2}-1) \\)", "\\( (\\sqrt[4]{2}-1)(\\sqrt{2}-1) \\)"], ans: 0 },
+        { q: "Өрнекті ықшамдаңыз: \\( \\frac{6}{\\sqrt{2}+\\sqrt{3}+\\sqrt{5}} \\)", opts: ["\\( \\frac{3\\sqrt{2}+2\\sqrt{3}-\\sqrt{30}}{2} \\)", "\\( \\frac{3\\sqrt{2}-2\\sqrt{3}+\\sqrt{30}}{2} \\)", "\\( \\frac{-3\\sqrt{2}+2\\sqrt{3}+\\sqrt{30}}{2} \\)", "\\( \\frac{3\\sqrt{2}-2\\sqrt{3}-\\sqrt{30}}{2} \\)"], ans: 0 },
+        { q: "Есептеңіз: \\( (\\frac{2}{\\sqrt{3}-1}+\\frac{3}{\\sqrt{3}-2}+\\frac{6}{3-\\sqrt{3}}-3)\\cdot\\frac{2}{\\sqrt{3}+5} \\)", opts: ["-2", "2", "-1", "1"], ans: 0 },
+        { q: "Есептеңіз: \\( \\frac{\\sqrt{25}+8\\sqrt{5}}{8+\\sqrt{5}}\\cdot\\sqrt{9-4\\sqrt{5}} \\)", opts: ["\\( 5-2\\sqrt{5} \\)", "\\( 5+2\\sqrt{5} \\)", "\\( -5-2\\sqrt{5} \\)", "\\( -5+2\\sqrt{5} \\)"], ans: 0 },
+        { q: "Есептеңіз: \\( (\\sqrt[6]{9+4\\sqrt{5}}+\\sqrt[3]{2+\\sqrt{5}})\\cdot\\sqrt[3]{\\sqrt{5}-2} \\)", opts: ["2", "1", "4", "0"], ans: 0 },
+        { q: "Есептеңіз: \\( (\\sqrt{28}-\\sqrt{12})\\cdot\\sqrt{10+\\sqrt{84}} \\)", opts: ["8", "4", "12", "16"], ans: 0 },
+        { q: "Есептеңіз: \\( \\sqrt[3]{5\\sqrt{2}-7}\\cdot\\sqrt{3+2\\sqrt{2}} \\)", opts: ["1", "2", "3", "\\( \\sqrt{2} \\)"], ans: 0 },
+        { q: "Есептеңіз: \\( (2\\sqrt{6}-5)^2-10\\sqrt{49-20\\sqrt{6}}+1 \\)", opts: ["0", "1", "-1", "5"], ans: 0 }
     ];
 
     // ==========================================
@@ -432,25 +424,39 @@
         { q: "Жәшікте 6 қызыл, 3 ақ, 2 жасыл, 1 көк шар бар. 3 бірдей түсті шар алу үшін ең кем неше шар алу керек?", opts: ["8", "5", "3", "6"], ans: 0 },
         { q: "4 ақ, 7 қара, 8 қызыл шар. Міндетті түрде 6 бірдей түсті шар болуы үшін ең көп неше шар алу керек?", opts: ["15", "7", "12", "6"], ans: 0 },
         { q: "Отбасы 3 адамнан тұрады: әкесі, анасы және ұлы. Анасы мен ұлының жастарының қосындысы 45, әкесі мен анасының жастары 75. Үшеуінің жастары 90. Ұлы нешеде?", opts: ["15", "10", "20", "25"], ans: 0 },
-        { q: "Егер $a@b = a^2 - b$ болса, $5@3$ неге тең?", opts: ["22", "12", "8", "28"], ans: 0 }
+        { q: "Егер a@b = a^2 - b болса, 5@3 неге тең?", opts: ["22", "12", "8", "28"], ans: 0 }
     ];
 
     // ==========================================
-    // ЛОГИКА (ӨЗГЕРІССІЗ)
+    // ЛОГИКА
     // ==========================================
     let myId = "u" + Date.now() + Math.floor(Math.random()*100);
-    let myName = localStorage.getItem("easymath_name") || "";
+    let myName = sessionStorage.getItem("easymath_name") || localStorage.getItem("easymath_name") || "";
     let myPoints = parseInt(localStorage.getItem("easymath_points") || "0");
     let roomRef = null, curRoomId = null, myRole = null, roomData = null;
     let currentQ = 0;
     let renderedQ = -1; 
 
-    window.onload = () => { document.getElementById("header-score").innerText = myPoints; };
+    // БЕТТІ ЖАҢАРТҚАНДА (F5) ОЙЫННАН ШЫҚЫП КЕТПЕУ ҮШІН
+    window.onload = () => { 
+        document.getElementById("header-score").innerText = myPoints; 
+        
+        let savedRoom = sessionStorage.getItem("active_room");
+        let savedRole = sessionStorage.getItem("active_role");
+        
+        if(savedRoom && savedRole && myName) {
+            curRoomId = savedRoom;
+            myRole = savedRole;
+            roomRef = database.ref('rooms/' + curRoomId);
+            startBattleUI();
+        }
+    };
 
     function login() {
         myName = document.getElementById("playerName").value.trim();
         if(!myName) return alert("Атыңды жаз!");
         localStorage.setItem("easymath_name", myName);
+        sessionStorage.setItem("easymath_name", myName);
         database.ref('users/' + myId).set({ name: myName, online: true });
         database.ref('users/' + myId).onDisconnect().remove();
         showScreen("screen-lobby");
@@ -461,6 +467,17 @@
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
         document.getElementById(id).classList.add('active-screen');
+    }
+
+    function safeGoHome() {
+        if (curRoomId && myRole !== 'spectator') {
+            if (confirm("Ойыннан шығуға сенімдісіз бе? Барлық прогресс жоғалады.")) {
+                leaveRoom();
+                location.href = 'index.html';
+            }
+        } else {
+            location.href = 'index.html';
+        }
     }
 
     function listenToOnlineUsers() {
@@ -577,17 +594,36 @@
         startBattleUI();
     }
 
+    function leaveRoomSafe() {
+        if(myRole !== 'spectator') {
+            if (confirm("Ойыннан шығуға сенімдісіз бе? Барлық прогресс жоғалады.")) {
+                leaveRoom();
+            }
+        } else {
+            leaveRoom();
+        }
+    }
+
     function leaveRoom() {
         if(roomRef) roomRef.off();
         if(curRoomId && myRole !== 'spectator') database.ref('rooms/' + curRoomId + '/players/' + myId).remove();
+        
+        sessionStorage.removeItem("active_room");
+        sessionStorage.removeItem("active_role");
+
         renderedQ = -1;
         showScreen("screen-lobby");
     }
 
-    // --- ОЙЫН ---
     function startBattleUI() {
         showScreen("screen-game");
         
+        // Ойын басталғанда session-ға жазу (Ф5 басса сақталу үшін)
+        if(myRole !== 'spectator') {
+            sessionStorage.setItem("active_room", curRoomId);
+            sessionStorage.setItem("active_role", myRole);
+        }
+
         roomRef.on('value', snap => {
             if(!snap.exists()) return leaveRoom();
             let data = snap.val();
@@ -595,7 +631,6 @@
             
             dbQuestions = data.subj === 'math_lit' ? mathLitDB : mathDB;
 
-            // Header info
             let t1Names = [], t2Names = [];
             for(let key in data.players) {
                 if(data.players[key].team === 't1') t1Names.push(data.players[key].name);
@@ -614,13 +649,11 @@
             currentQ = data.currentQ;
             renderQuestion(); 
 
-            // ЖАУАП БЕРІЛІП ҚОЙДЫ МА?
+            // ЖАУАП БЕРІЛГЕН ЖАҒДАЙ
             if(data.answeredQ === data.currentQ) {
-                // Блоктау
                 document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
                 document.getElementById("team-controls").style.display = 'none';
                 
-                // Дұрыс/Қате түстерді көрсету
                 let correctIdx = dbQuestions[data.questions[data.currentQ]].ans;
                 let correctBtn = document.getElementById("opt-" + correctIdx);
                 if(correctBtn) correctBtn.classList.add("correct");
@@ -630,12 +663,10 @@
                     if(wrongBtn) wrongBtn.classList.add("wrong");
                 }
                 
-                // Хабарлама
                 let msg = data.answeredCorrectly ? `🔥 <b>${data.answeredBy}</b> дұрыс тапты! (+1)` : `❌ <b>${data.answeredBy}</b> қате жауап берді!`;
                 document.getElementById("wait-msg").innerHTML = msg;
                 document.getElementById("wait-msg").style.display = 'block';
                 
-                // Келесі / Аяқтау
                 document.getElementById("post-answer-controls").style.display = 'flex';
                 if(myRole !== 'spectator') {
                     if(data.currentQ + 1 < data.qCount) {
@@ -647,14 +678,13 @@
                     }
                 }
             } else {
-                // Әлі жауап берілген жоқ, таңдауларды бояу
                 if(myRole !== 'spectator') updateTeamSelectionsUI(data);
             }
         });
     }
 
     function renderQuestion() {
-        if(renderedQ === currentQ) return; // ҚАЙТА ЖҮКТЕЛУДІ БОЛДЫРМАУ ҮШІН 
+        if(renderedQ === currentQ) return; 
         renderedQ = currentQ;
 
         document.getElementById("wait-msg").style.display = 'none';
@@ -668,7 +698,6 @@
         let optsBox = document.getElementById("options-container");
         optsBox.innerHTML = "";
         
-        // Рандомизация жасалып, HTML-ға 1-ақ рет салынады
         let opts = qData.opts.map((opt, i) => ({opt, i})).sort(() => Math.random() - 0.5);
         let letters = ['A', 'B', 'C', 'D'];
 
@@ -689,12 +718,10 @@
         if (window.MathJax) MathJax.typesetPromise();
     }
 
-    // Нұсқаны басқанда мөлдір көкпен боялады
     function selectOption(idx) {
         roomRef.child('players/' + myId).update({ selection: idx });
     }
 
-    // Көкпен бояуды және "Растауды" көрсетуді басқарады
     function updateTeamSelectionsUI(room) {
         document.querySelectorAll('.team-badge').forEach(e => e.remove());
         document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
@@ -707,7 +734,7 @@
                 let btn = document.getElementById('opt-' + p.selection);
                 if(btn) {
                     if (key === myId) {
-                        btn.classList.add('selected'); // Өзі басқаны МӨЛДІР КӨК
+                        btn.classList.add('selected'); 
                         mySelection = p.selection;
                     }
                     if(room.mode !== '1v1' && key !== myId) {
@@ -727,7 +754,6 @@
         }
     }
 
-    // РАСТАУ БАТЫРМАСЫНЫҢ ЛОГИКАСЫ
     function confirmTeamAnswer() {
         let myTeamSelection = roomData.players[myId].selection;
         if(myTeamSelection === undefined || myTeamSelection === null) return alert("Жауапты таңдаңыз!");
@@ -756,7 +782,6 @@
         submitAnswer(myTeamSelection, dbQuestions[roomData.questions[currentQ]].ans);
     }
 
-    // GET & UPDATE (Транзакция қатып қалмау үшін)
     function submitAnswer(selectedIdx, correctIdx) {
         roomRef.get().then(snap => {
             if(!snap.exists()) return;
@@ -780,7 +805,6 @@
         });
     }
 
-    // КЕЛЕСІ СҰРАҚҚА ӨТУ (Кім бірінші басса сол өткізеді)
     function nextQuestion() {
         roomRef.get().then(snap => {
             if(!snap.exists()) return;
@@ -800,6 +824,9 @@
 
     function showResults(room) {
         roomRef.off();
+        
+        sessionStorage.removeItem("active_room");
+        sessionStorage.removeItem("active_role");
         
         let popup = document.getElementById("result-popup");
         let title = document.getElementById("res-title");
@@ -845,7 +872,6 @@
         setTimeout(() => {
             popup.style.display = "none";
             leaveRoom();
-            renderedQ = -1;
         }, 3000);
     }
 </script>
